@@ -1,4 +1,7 @@
 data BoardPoint = BoardPoint {x :: Int, y :: Int} deriving (Show)
+isInBoard :: Board -> BoardPoint -> Bool
+isInBoard board point = (x point) >= 0 || (x point) < size board || (y point) >= 0 || (y point) < size board
+
 data Color = Yellow | Red | Green | Blue | Empty deriving (Show, Eq)
 data Board = Board {array :: [Color], size :: Int} deriving (Show)
 data Piece = Piece {colorArray :: [[Color]]} deriving (Show)
@@ -38,7 +41,7 @@ boardIndex board point = ((x point) * (size board)) + (y point)
 
 boardAccess :: Board -> BoardPoint -> Color
 boardAccess board point
-	| (x point) < 0 || (x point) > size board || (y point) < 0 || (y point) > size board = error "index out of range"
+	| not $ isInBoard board point = error "index out of range"
 	| otherwise = array board !! (((x point)*(size board)) + (y point))
 
 safeBoardAccess :: Board -> BoardPoint -> [Color]
@@ -48,12 +51,12 @@ safeBoardAccess board point
 
 corners :: Board -> BoardPoint -> [Color]
 corners board point
-	| (x point) < 0 || (x point) > (size board) || (y point) < 0 || (y point) > (size board) = error "index out of range"
+	| not $ isInBoard board point = error "index out of range"
 	| otherwise = (safeBoardAccess board (BoardPoint ((x point)-1) ((y point)-1))) ++ (safeBoardAccess board (BoardPoint ((x point)-1) ((y point)+1))) ++ (safeBoardAccess board (BoardPoint ((x point)+1) ((y point)-1))) ++ (safeBoardAccess board (BoardPoint ((x point)+1) ((y point)+1)))
 
 sides :: Board -> BoardPoint -> [Color]
 sides board point
-	| (x point) < 0 || (x point) >= (size board) || (y point) < 0 || (y point) >= (size board) = error "index out ofrange"
+	| not $ isInBoard board point = error "index out of range"
 	| otherwise = (safeBoardAccess board (BoardPoint ((x point)-1) ((y point)))) ++ (safeBoardAccess board (BoardPoint ((x point)+1) ((y point)))) ++ (safeBoardAccess board (BoardPoint ((x point)) ((y point)-1))) ++ (safeBoardAccess board (BoardPoint ((x point)) ((y point)+1)))
 
 isOpenToColor :: Board -> Color -> BoardPoint -> Bool
@@ -66,7 +69,7 @@ initOrEmpty list = init list
 
 addSquareToBoard :: Board -> Color -> BoardPoint -> Board
 addSquareToBoard board color point
-	| (x point) < 0 || (x point) >= (size board) || (y point) < 0 || (y point) >= (size board) = error "index out ofrange"
+	| not $ isInBoard board point = error "index out of range"
 	| otherwise = Board ((initOrEmpty $ fst $ splitAt (boardIndex board point) (array board)) ++ [color] ++ (snd $ splitAt (boardIndex board point) (array board))) (size board)
 
 addPieceSquareToBoard :: Board -> Piece -> BoardPoint -> BoardPoint -> Board
