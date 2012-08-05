@@ -1,15 +1,28 @@
+data BoardPoint = BoardPoint {x :: Int, y :: Int} deriving (Show)
 data Color = Yellow | Red | Green | Blue | Empty deriving (Show, Eq)
 data Board = Board {array :: [Color], size :: Int} deriving (Show)
-data Piece = Piece {colorArray :: [[Color]]}
-data Player = Player {pieces :: [Piece], color :: Color}
+data Piece = Piece {colorArray :: [[Color]]} deriving (Show)
+width :: Piece -> Int
+width piece = length $ colorArray piece !! 0
+
+prevPoint :: Piece -> BoardPoint -> BoardPoint
+prevPoint piece (BoardPoint 0 y) = BoardPoint (width piece) (y-1)
+prevPoint piece boardPoint = BoardPoint (x boardPoint - 1) (y boardPoint)
+
+data Player = Player {pieces :: [Piece], color :: Color} deriving (Show)
 
 defaultSize = 20
 newBoard = (Board (take (defaultSize * defaultSize) $ repeat Empty) defaultSize)
-newPlayer = ([[[True]], 
-			 [[True, False], [True, True]],
-			 [[True, True]],
-			 [[True, True], [True, True]],
-			 [[True, True, True]]], 
+newPlayer = (Player 
+			(
+			 [
+			 Piece [[Red]], 
+			 Piece [[Red, Empty], [Red, Red]],
+			 Piece [[Red, Red]],
+			 Piece [[Red, Red], [Red, Red]],
+			 Piece [[Red, Red, Red]]
+			 ]
+			)
 			 Red)
 
 safeAccess :: [a] -> Int -> [a]
@@ -41,14 +54,18 @@ sides (Board board size) x y
 	| otherwise = (safeBoardAccess (Board board size) (x-1) (y)) ++ (safeBoardAccess (Board board size) (x+1) (y)) ++ (safeBoardAccess (Board board size) (x) (y-1)) ++ (safeBoardAccess (Board board size) (x) (y+1))
 
 isOpenToColor :: Board -> Color -> Int -> Int -> Bool
-isOpenToColor (Board board size) color 0 0 = board !! 0 == Empty
-isOpenToColor (Board board size) color x y = (color `elem` (corners (Board board size) x y)) && (not (color `elem` sides (Board board size) x y)) && (board !! ((x*size) + y) == Empty)
+isOpenToColor board color 0 0 = (array board) !! 0 == Empty
+isOpenToColor board color x y = (color `elem` (corners board x y)) && (not (color `elem` sides board x y)) && ((array board) !! ((x* (size board)) + y) == Empty)
 
 addSquareToBoard :: Board -> Color -> Int -> Int -> Board
 addSquareToBoard board color x y 
-	| x < 0 || x >= size || y < 0 || y >= size = error "index out ofrange"
+	| x < 0 || x >= (size board) || y < 0 || y >= (size board) = error "index out ofrange"
 	| otherwise = Board (init $ fst (splitAt (boardIndex board x y) (array board)) ++ [color] ++ (snd $ splitAt (boardIndex board x y) (array board))) (size board)
 
-addPieceToBoard :: Board -> Piece -> Int -> Int -> Int -> Board
-addPieceToBoard board piece x y 0 =error "not implemented yet" 
-addPieceToBoard _ _ _ _ rotation = error "not implemented yet"
+addPieceSquareToBoard :: Board -> Piece -> BoardPoint -> BoardPoint -> Board
+addPieceSquareToBoard board piece boardLocation (BoardPoint 0 0) = addSquareToBoard board ((colorArray piece) !! (x boardLocation) !! (y boardLocation)) (x boardLocation) (y boardLocation)
+addPieceSquareToBoard board piece boardLocation pieceLocation = addPieceSquareToBoard (addSquareToBoard board ((colorArray piece) !! (x boardLocation) !! (y boardLocation)) ((x boardLocation) + (x pieceLocation)) ((y boardLocation) + (y pieceLocation))) piece boardLocation (prevPoint piece pieceLocation)
+
+addPieceToBoard :: Board -> Piece -> BoardPoint -> Int -> Board
+addPieceToBoard board piece boardPoint 0 = (addPieceSquareToBoard board piece boardPoint) (BoardPoint 0 0)
+addPieceToBoard _ _ _ rotation = error "not implemented yet"
