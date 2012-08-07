@@ -10,6 +10,18 @@ data BoardPoint = BoardPoint {x :: Int, y :: Int} deriving (Show)
 isInBoard :: Board -> BoardPoint -> Bool
 isInBoard board point = (x point) >= 0 || (x point) < size board || (y point) >= 0 || (y point) < size board
 
+leftPoint :: BoardPoint -> BoardPoint
+leftPoint (BoardPoint x y) = BoardPoint (x - 1) y
+
+rightPoint :: BoardPoint -> BoardPoint
+rightPoint (BoardPoint x y) = BoardPoint (x + 1) y
+
+upPoint :: BoardPoint -> BoardPoint
+upPoint (BoardPoint x y) = BoardPoint x (y - 1)
+
+downPoint :: BoardPoint -> BoardPoint
+downPoint (BoardPoint x y) = BoardPoint x (y + 1)
+
 data Color = Yellow | Red | Green | Blue | Empty deriving (Show, Eq)
 
 instance ShowToUser Color where
@@ -77,7 +89,7 @@ corners board point
 sides :: Board -> BoardPoint -> [Color]
 sides board point
 	| not $ isInBoard board point = error "index out of range"
-	| otherwise = (safeBoardAccess board (BoardPoint ((x point)-1) ((y point)))) ++ (safeBoardAccess board (BoardPoint ((x point)+1) ((y point)))) ++ (safeBoardAccess board (BoardPoint ((x point)) ((y point)-1))) ++ (safeBoardAccess board (BoardPoint ((x point)) ((y point)+1)))
+	| otherwise = (safeBoardAccess board $ leftPoint point) ++ (safeBoardAccess board $ rightPoint point) ++ (safeBoardAccess board $ upPoint point) ++ (safeBoardAccess board $downPoint point)
 
 isOpenToColor :: Board -> Color -> BoardPoint -> Bool
 isOpenToColor board color (BoardPoint 0 0) = (array board) !! 0 == Empty
