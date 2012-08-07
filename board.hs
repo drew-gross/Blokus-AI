@@ -1,9 +1,29 @@
+import Data.List.Split
+
+class ShowToUser a where
+	showToUser :: a -> String
+
+instance (ShowToUser a) => ShowToUser [a] where
+	showToUser list = foldr1 (++) (map showToUser list) ++ "\n"
+
 data BoardPoint = BoardPoint {x :: Int, y :: Int} deriving (Show)
 isInBoard :: Board -> BoardPoint -> Bool
 isInBoard board point = (x point) >= 0 || (x point) < size board || (y point) >= 0 || (y point) < size board
 
 data Color = Yellow | Red | Green | Blue | Empty deriving (Show, Eq)
+
+instance ShowToUser Color where
+	showToUser Yellow = "Y"
+	showToUser Red = "R"
+	showToUser Green = "G"
+	showToUser Blue = "B"
+	showToUser Empty = "."
+
 data Board = Board {array :: [Color], size :: Int} deriving (Show)
+
+instance ShowToUser Board where
+	showToUser board = showToUser $ splitEvery 20 (array board)
+
 data Piece = Piece {colorArray :: [[Color]]} deriving (Show)
 width :: Piece -> Int
 width piece = length $ colorArray piece !! 0
@@ -84,3 +104,6 @@ addPieceSquareToBoard board piece boardLocation pieceLocation = addPieceSquareTo
 addPieceToBoard :: Board -> Piece -> BoardPoint -> Int -> Board
 addPieceToBoard board piece boardPoint 0 = (addPieceSquareToBoard board piece boardPoint) (maxPoint piece)
 addPieceToBoard _ _ _ rotation = error "not implemented yet"
+
+main = do
+	putStr $ showToUser newBoard
