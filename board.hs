@@ -4,7 +4,7 @@ class ShowToUser a where
 	showToUser :: a -> String
 
 instance (ShowToUser a) => ShowToUser [a] where
-	showToUser list = foldr1 (++) (map showToUser list) ++ "\n"
+	showToUser list = concatMap showToUser list ++ "\n"
 
 data BoardPoint = BoardPoint {x :: Int, y :: Int} deriving (Show)
 isInBoard :: Board -> BoardPoint -> Bool
@@ -66,7 +66,7 @@ boardAccess board point
 
 safeBoardAccess :: Board -> BoardPoint -> [Color]
 safeBoardAccess board point
-	| (y point) < 0 || (y point) >= (size board) || (x point) < 0 || (x point) >= (size board) = []
+	| not $ isInBoard board point = []
 	| otherwise = [boardAccess board point]
 
 corners :: Board -> BoardPoint -> [Color]
@@ -106,4 +106,7 @@ addPieceToBoard board piece boardPoint 0 = (addPieceSquareToBoard board piece bo
 addPieceToBoard _ _ _ rotation = error "not implemented yet"
 
 main = do
-	putStr $ showToUser newBoard
+	x <- getLine
+	y <- getLine
+	piece <- getLine
+	putStr $ showToUser $ addPieceToBoard newBoard ((pieces newPlayer) !! read piece) (BoardPoint (read x) (read y)) 0
