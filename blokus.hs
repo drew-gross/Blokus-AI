@@ -56,7 +56,7 @@ safeBoardAccess board point
 corners :: Board -> BoardPoint -> [Color]
 corners board point
 	| not $ isInBoard board point = error "index out of range"
-	| otherwise = (safeBoardAccess board (BoardPoint ((x point)-1) ((y point)-1))) ++ (safeBoardAccess board (BoardPoint ((x point)-1) ((y point)+1))) ++ (safeBoardAccess board (BoardPoint ((x point)+1) ((y point)-1))) ++ (safeBoardAccess board (BoardPoint ((x point)+1) ((y point)+1)))
+	| otherwise = (safeBoardAccess board (ulPoint point)) ++ (safeBoardAccess board (urPoint point)) ++ (safeBoardAccess board (drPoint point)) ++ (safeBoardAccess board (dlPoint point))
 
 sides :: Board -> BoardPoint -> [Color]
 sides board point
@@ -70,8 +70,8 @@ isOpenToColor board color point = (color `elem` (corners board point)) && (not (
 addPieceSquareToBoard :: Board -> Piece -> BoardPoint -> BoardPoint -> Board
 addPieceSquareToBoard board piece boardLocation (BoardPoint 0 0) = addSquareToBoard board (pieceAccess piece (BoardPoint 0 0)) boardLocation
 addPieceSquareToBoard board piece boardLocation pieceLocation = 
-	let updatedboard = (addSquareToBoard board (pieceAccess piece pieceLocation) (boardLocation `plus` pieceLocation))
-	in addPieceSquareToBoard updatedboard piece boardLocation (prevPoint piece pieceLocation)
+	let updatedBoard = (addSquareToBoard board (pieceAccess piece pieceLocation) (boardLocation `plus` pieceLocation))
+	in addPieceSquareToBoard updatedBoard piece boardLocation (prevPoint piece pieceLocation)
 
 addPieceToBoard :: Board -> Piece -> BoardPoint -> Int -> Board
 addPieceToBoard board piece boardPoint 0 = traceShow boardPoint $ addPieceSquareToBoard board piece boardPoint (maxPoint piece)

@@ -12,6 +12,11 @@ module Board
 	upPoint,
 	downPoint,
 
+	ulPoint,
+	urPoint,
+	dlPoint,
+	drPoint,
+
 	initOrEmpty,
 	showToUser
 ) where
@@ -69,3 +74,8 @@ upPoint (BoardPoint x y) = BoardPoint x (y - 1)
 
 downPoint :: BoardPoint -> BoardPoint
 downPoint (BoardPoint x y) = BoardPoint x (y + 1)
+
+ulPoint = upPoint . leftPoint
+urPoint = upPoint . rightPoint
+dlPoint = downPoint . leftPoint
+drPoint = downPoint . rightPoint
