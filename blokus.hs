@@ -25,7 +25,7 @@ maxPoint piece = BoardPoint ((width piece) - 1) ((height piece) - 1)
 pieceAccess :: Piece -> BoardPoint -> Color
 pieceAccess piece (BoardPoint x y)
 	| not $ isInPiece piece (BoardPoint x y) = error "index out of range"
-	| otherwise = (colorArray piece) !! x !! y
+	| otherwise = (colorArray piece) !! y !! x
 
 data Player = Player {pieces :: [Piece], color :: Color} deriving (Show)
 
@@ -68,11 +68,10 @@ isOpenToColor board color (BoardPoint 0 0) = boardAccess board (BoardPoint 0 0) 
 isOpenToColor board color point = (color `elem` (corners board point)) && (not (color `elem` sides board point)) && ((boardAccess board point) == Empty)
 
 addPieceSquareToBoard :: Board -> Piece -> BoardPoint -> BoardPoint -> Board
-addPieceSquareToBoard board piece boardLocation (BoardPoint 0 0) = traceShow "adding from piece 0 0 " $ addSquareToBoard board (pieceAccess piece (BoardPoint 0 0)) boardLocation
-addPieceSquareToBoard board piece boardLocation pieceLocation = traceShow (pieceLocation) $ addPieceSquareToBoard (addSquareToBoard 
-																					   board 
-																					   (pieceAccess piece pieceLocation) 
-																					   (boardLocation `plus` pieceLocation)) piece boardLocation (prevPoint piece pieceLocation)
+addPieceSquareToBoard board piece boardLocation (BoardPoint 0 0) = addSquareToBoard board (pieceAccess piece (BoardPoint 0 0)) boardLocation
+addPieceSquareToBoard board piece boardLocation pieceLocation = 
+	let updatedboard = (addSquareToBoard board (pieceAccess piece pieceLocation) (boardLocation `plus` pieceLocation))
+	in addPieceSquareToBoard updatedboard piece boardLocation (prevPoint piece pieceLocation)
 
 addPieceToBoard :: Board -> Piece -> BoardPoint -> Int -> Board
 addPieceToBoard board piece boardPoint 0 = traceShow boardPoint $ addPieceSquareToBoard board piece boardPoint (maxPoint piece)
