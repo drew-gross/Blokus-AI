@@ -16,7 +16,7 @@ height :: Piece -> Int
 height (Piece colorArray) = length colorArray
 
 prevPoint :: Piece -> BoardPoint -> BoardPoint
-prevPoint piece (BoardPoint 0 y) = BoardPoint (width piece) (y-1)
+prevPoint piece (BoardPoint 0 y) = BoardPoint (width piece - 1) (y-1)
 prevPoint piece boardPoint = BoardPoint (x boardPoint - 1) (y boardPoint)
 
 maxPoint :: Piece -> BoardPoint
@@ -24,7 +24,7 @@ maxPoint piece = BoardPoint ((width piece) - 1) ((height piece) - 1)
 
 pieceAccess :: Piece -> BoardPoint -> Color
 pieceAccess piece (BoardPoint x y)
-	| not $ isInPiece piece (BoardPoint x y) = error "index out of range"
+	| not $ isInPiece piece (BoardPoint x y) = error "PieceAccess: index out of range"
 	| otherwise = (colorArray piece) !! y !! x
 
 data Player = Player {pieces :: [Piece], color :: Color} deriving (Show)
