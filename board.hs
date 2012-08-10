@@ -55,9 +55,12 @@ boardIndex :: Board -> BoardPoint -> Int
 boardIndex board point = ((x point) * (size board)) + (y point)
 
 addSquareToBoard :: Board -> Color -> BoardPoint -> Board
+addSquareToBoard (Board array size) color (BoardPoint 0 0) = (Board ([color] ++ (tail array)) size)
 addSquareToBoard board color point
 	| not $ isInBoard board point = error "index out of range"
-	| otherwise = Board ((initOrEmpty $ fst $ splitAt (boardIndex board point) (array board)) ++ [color] ++ (snd $ splitAt (boardIndex board point) (array board))) (size board)
+	| otherwise = 
+		let splitBoard = splitAt (boardIndex board point) (array board)
+		in Board ((initOrEmpty $ fst splitBoard) ++ [color] ++ snd splitBoard) (size board)
 
 instance ShowToUser Board where
 	showToUser board = showToUser $ splitEvery 20 (array board)

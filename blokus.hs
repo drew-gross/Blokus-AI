@@ -70,8 +70,10 @@ isOpenToColor board color point = (color `elem` (corners board point)) && (not (
 addPieceSquareToBoard :: Board -> Piece -> BoardPoint -> BoardPoint -> Board
 addPieceSquareToBoard board piece boardLocation (BoardPoint 0 0) = addSquareToBoard board (pieceAccess piece (BoardPoint 0 0)) boardLocation
 addPieceSquareToBoard board piece boardLocation pieceLocation = 
-	let updatedBoard = (addSquareToBoard board (pieceAccess piece pieceLocation) (boardLocation `plus` pieceLocation))
-	in addPieceSquareToBoard updatedBoard piece boardLocation (prevPoint piece pieceLocation)
+	let	nextPieceLocation = (prevPoint piece pieceLocation)
+		color = (pieceAccess piece pieceLocation)
+		updatedBoard = (addSquareToBoard board color (boardLocation `plus` pieceLocation))
+	in addPieceSquareToBoard updatedBoard piece boardLocation nextPieceLocation
 
 addPieceToBoard :: Board -> Piece -> BoardPoint -> Int -> Board
 addPieceToBoard board piece boardPoint 0 = traceShow boardPoint $ addPieceSquareToBoard board piece boardPoint (maxPoint piece)
