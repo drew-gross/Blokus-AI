@@ -1,44 +1,32 @@
 import Debug.Trace
-import Board
 
+import Color
+import Point
+import Grid
+import Utilities
 
-isInPiece :: Piece -> BoardPoint -> Bool
-isInPiece piece (BoardPoint x y) = x >= 0 && x < width piece && y >= 0 && y < height piece
+type Board = Grid Color
+type Piece = Grid Color
 
-plus :: BoardPoint -> BoardPoint -> BoardPoint
-plus (BoardPoint x1 y1) (BoardPoint x2 y2) = BoardPoint (x1 + x2) (y1 + y2)
+prevPoint :: Piece -> Point -> Point
+prevPoint piece (Point 0 y) = Point (width piece - 1) (y - 1)
+prevPoint piece point = Point (x point - 1) (y point)
 
-data Piece = Piece {colorArray :: [[Color]]} deriving (Show)
-width :: Piece -> Int
-width (Piece colorArray) = length $ head colorArray
-
-height :: Piece -> Int
-height (Piece colorArray) = length colorArray
-
-prevPoint :: Piece -> BoardPoint -> BoardPoint
-prevPoint piece (BoardPoint 0 y) = BoardPoint (width piece - 1) (y-1)
-prevPoint piece boardPoint = BoardPoint (x boardPoint - 1) (y boardPoint)
-
-maxPoint :: Piece -> BoardPoint
-maxPoint piece = BoardPoint ((width piece) - 1) ((height piece) - 1)
-
-pieceAccess :: Piece -> BoardPoint -> Color
-pieceAccess piece (BoardPoint x y)
-	| not $ isInPiece piece (BoardPoint x y) = error "PieceAccess: index out of range"
-	| otherwise = (colorArray piece) !! y !! x
+maxPoint :: Piece -> Point
+maxPoint piece = Point ((width piece) - 1) ((height piece) - 1)
 
 data Player = Player {pieces :: [Piece], color :: Color} deriving (Show)
 
 defaultSize = 20
-newBoard = (Board (take (defaultSize * defaultSize) $ repeat Empty) defaultSize)
+newBoard = Grid (take (defaultSize * defaultSize) $ repeat Empty) defaultSize
 newPlayer = (Player 
 			(
 			 [
-			 Piece [[Red]], 
-			 Piece [[Red, Empty], [Red, Red]],
-			 Piece [[Red, Red]],
-			 Piece [[Red, Red], [Red, Red]],
-			 Piece [[Red, Red, Red]]
+			 Grid [Red] 1, 
+			 Grid [Red, Empty, Red, Red] 2,
+			 Grid [Red, Red] 1,
+			 Grid [Red, Red, Red, Red] 2,
+			 Grid [Red, Red, Red] 1
 			 ]
 			)
 			 Red)
@@ -48,34 +36,34 @@ safeAccess list index = if index < 0 || index >= length list
 					then []
 					else [list !! index]
 
-safeBoardAccess :: Board -> BoardPoint -> [Color]
+safeBoardAccess :: Board -> Point -> [Color]
 safeBoardAccess board point
-	| not $ isInBoard board point = []
-	| otherwise = [boardAccess board point]
+	| not $ containsPoint board point = []
+	| otherwise = [itemAt board point]
 
-corners :: Board -> BoardPoint -> [Color]
+corners :: Board -> Point -> [Color]
 corners board point
-	| not $ isInBoard board point = error "index out of range"
+	| not $ containsPoint board point = error "index out of range"
 	| otherwise = (safeBoardAccess board (ulPoint point)) ++ (safeBoardAccess board (urPoint point)) ++ (safeBoardAccess board (drPoint point)) ++ (safeBoardAccess board (dlPoint point))
 
-sides :: Board -> BoardPoint -> [Color]
+sides :: Board -> Point -> [Color]
 sides board point
-	| not $ isInBoard board point = error "index out of range"
+	| not $ containsPoint board point = error "index out of range"
 	| otherwise = (safeBoardAccess board $ leftPoint point) ++ (safeBoardAccess board $ rightPoint point) ++ (safeBoardAccess board $ upPoint point) ++ (safeBoardAccess board $ downPoint point)
 
-isOpenToColor :: Board -> Color -> BoardPoint -> Bool
-isOpenToColor board color (BoardPoint 0 0) = boardAccess board (BoardPoint 0 0) == Empty
-isOpenToColor board color point = (color `elem` (corners board point)) && (not (color `elem` sides board point)) && ((boardAccess board point) == Empty)
+isOpenToColor :: Board -> Color -> Point -> Bool
+isOpenToColor board color (Point 0 0) = itemAt board (Point 0 0) == Empty
+isOpenToColor board color point = (color `elem` (corners board point)) && (not (color `elem` sides board point)) && ((itemAt board point) == Empty)
 
-addPieceSquareToBoard :: Board -> Piece -> BoardPoint -> BoardPoint -> Board
-addPieceSquareToBoard board piece boardLocation (BoardPoint 0 0) = addSquareToBoard board (pieceAccess piece (BoardPoint 0 0)) boardLocation
+addPieceSquareToBoard :: Board -> Piece -> Point -> Point -> Board
+addPieceSquareToBoard board piece boardLocation (Point 0 0) = changeItemAt board (itemAt piece (Point 0 0)) boardLocation
 addPieceSquareToBoard board piece boardLocation pieceLocation = 
 	let	nextPieceLocation = (prevPoint piece pieceLocation)
-		color = (pieceAccess piece pieceLocation)
-		updatedBoard = (addSquareToBoard board color (boardLocation `plus` pieceLocation))
+		color = (itemAt piece pieceLocation)
+		updatedBoard = (changeItemAt board color (boardLocation `plus` pieceLocation))
 	in addPieceSquareToBoard updatedBoard piece boardLocation nextPieceLocation
 
-addPieceToBoard :: Board -> Piece -> BoardPoint -> Int -> Board
+addPieceToBoard :: Board -> Piece -> Point -> Int -> Board
 addPieceToBoard board piece boardPoint 0 = traceShow boardPoint $ addPieceSquareToBoard board piece boardPoint (maxPoint piece)
 addPieceToBoard _ _ _ rotation = error "not implemented yet"
 
@@ -83,4 +71,4 @@ main = do
 	x <- getLine
 	y <- getLine
 	piece <- getLine
-	putStr $ showToUser $ addPieceToBoard newBoard ((pieces newPlayer) !! read piece) (BoardPoint (read x) (read y)) 0
+	putStr $ showToUser $ addPieceToBoard newBoard ((pieces newPlayer) !! read piece) (Point (read x) (read y)) 0
