@@ -2,7 +2,6 @@ module Utilities(
 	ShowToUser,
 	showToUser,
 	initOrEmpty,
-	stupidDivision
 ) where
 
 class ShowToUser a where
@@ -14,8 +13,3 @@ instance (ShowToUser a) => ShowToUser [a] where
 initOrEmpty :: [a] -> [a]
 initOrEmpty [] = []
 initOrEmpty list = init list
-
-stupidDivision :: Int -> Int -> Int -> Bool -> (Int, Bool)
-stupidDivision numerator denominator previous done
-	| numerator < denominator = (previous, True)
-	| otherwise = stupidDivision (numerator - denominator) denominator (previous + 1) False

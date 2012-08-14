@@ -19,7 +19,7 @@ instance ShowToUser t => ShowToUser (Grid t) where
 	showToUser = showToUser . rows
 
 height :: Grid t -> Int
-height (Grid array width) = fst $ stupidDivision (length array) width 0 False
+height (Grid array width) = (length array) `div` width
 
 rows :: Grid t -> [[t]]
 rows (Grid array width) = splitEvery width array
