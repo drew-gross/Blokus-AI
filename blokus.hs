@@ -4,6 +4,7 @@ import Color
 import Point
 import Grid
 import Utilities
+import Player
 
 type Board = Grid Color
 type Piece = Grid Color
@@ -15,7 +16,6 @@ prevPoint piece point = Point (x point - 1) (y point)
 maxPoint :: Piece -> Point
 maxPoint piece = Point ((width piece) - 1) ((height piece) - 1)
 
-data Player = Player {pieces :: [Piece], color :: Color} deriving (Show)
 
 defaultSize = 20
 newBoard = Grid (take (defaultSize * defaultSize) $ repeat Empty) defaultSize
@@ -67,21 +67,21 @@ addPieceToBoard :: Board -> Piece -> Point -> Int -> Board
 addPieceToBoard board piece boardPoint 0 = addPieceSquareToBoard board piece boardPoint (maxPoint piece)
 addPieceToBoard _ _ _ rotation = error "not implemented yet"
 
-completeUserTurn :: Board -> IO Board
-completeUserTurn board = do
+completeUserTurn :: (Board, Player) -> IO (Board, Player)
+completeUserTurn (board, player) = do
 	x <- getLine
 	y <- getLine
 	pieceNum <- getLine
 	let
 		point = Point (read x) (read y)
-		piece = ((pieces newPlayer) !! read pieceNum)
-		newBoard = addPieceToBoard board piece point 0
-	return newBoard
+		piece = ((pieces player) !! read pieceNum)
+		updatedBoard = addPieceToBoard board piece point 0
+	return (updatedBoard, player)
 
-playGame :: Board -> IO Board
-playGame board = do
-	nextBoard <- completeUserTurn board
+playGame :: (Board, Player) -> IO Board
+playGame (board, player) = do
+	(nextBoard, nextPlayer) <- completeUserTurn (board, player)
 	putStr $ showToUser nextBoard
-	playGame nextBoard
+	playGame (nextBoard, nextPlayer)
 
-main = playGame newBoard
+main = playGame (newBoard, newPlayer)
