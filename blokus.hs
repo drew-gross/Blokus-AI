@@ -64,11 +64,24 @@ addPieceSquareToBoard board piece boardLocation pieceLocation =
 	in addPieceSquareToBoard updatedBoard piece boardLocation nextPieceLocation
 
 addPieceToBoard :: Board -> Piece -> Point -> Int -> Board
-addPieceToBoard board piece boardPoint 0 = traceShow boardPoint $ addPieceSquareToBoard board piece boardPoint (maxPoint piece)
+addPieceToBoard board piece boardPoint 0 = addPieceSquareToBoard board piece boardPoint (maxPoint piece)
 addPieceToBoard _ _ _ rotation = error "not implemented yet"
 
-main = do
+completeUserTurn :: Board -> IO Board
+completeUserTurn board = do
 	x <- getLine
 	y <- getLine
-	piece <- getLine
-	putStr $ showToUser $ addPieceToBoard newBoard ((pieces newPlayer) !! read piece) (Point (read x) (read y)) 0
+	pieceNum <- getLine
+	let
+		point = Point (read x) (read y)
+		piece = ((pieces newPlayer) !! read pieceNum)
+		newBoard = addPieceToBoard board piece point 0
+	return newBoard
+
+playGame :: Board -> IO Board
+playGame board = do
+	nextBoard <- completeUserTurn board
+	putStr $ showToUser nextBoard
+	playGame nextBoard
+
+main = playGame newBoard
