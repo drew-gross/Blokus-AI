@@ -39,12 +39,11 @@ itemAt grid point
 	| otherwise = array grid !! itemIndex grid point
 
 changeItemAt :: Grid t -> t -> Point -> Grid t
-changeItemAt (Grid array width) newItem (Point 0 0) = Grid ([newItem] ++ (tail array)) width
-changeItemAt grid newItem point
-	| not $ containsPoint grid point = error "index out of range"
-	| otherwise = 
-		let splitBoard = splitAt (itemIndex grid point) (array grid)
-		in Grid ((initOrEmpty $ fst splitBoard) ++ [newItem] ++ snd splitBoard) (width grid)
+changeItemAt grid newItem point = 
+	let
+		newItemIndex = itemIndex grid point
+		indexItemPairs = zip [0..] (array grid)
+	in Grid [if (fst itemIndexPair) == newItemIndex then newItem else (snd itemIndexPair) | itemIndexPair <- indexItemPairs] (width grid)
 
 changeItemsAt :: Grid t -> [t] -> [Point] -> Grid t
 changeItemsAt grid indexes points
