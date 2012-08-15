@@ -1,6 +1,7 @@
 module Player(
 	Player(Player),
-	pieces
+	pieces,
+	removePiece
 ) where
 
 import Color
@@ -17,3 +18,6 @@ instance ShowToUser Player where
 		pieceStrings = map showToUser (pieces player)
 		pairs = zip pieceAnnotations pieceStrings
 		in concat $ map (\pair -> fst pair ++ snd pair) pairs
+
+removePiece :: Player -> Int -> Player
+removePiece (Player pieces color) pieceIndex = Player (removeItem pieceIndex pieces) color

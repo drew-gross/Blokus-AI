@@ -17,7 +17,7 @@ maxPoint :: Piece -> Point
 maxPoint piece = Point ((width piece) - 1) ((height piece) - 1)
 
 
-defaultSize = 20
+defaultSize = 14
 newBoard = Grid (take (defaultSize * defaultSize) $ repeat Empty) defaultSize
 newPlayer = (Player 
 			(
@@ -69,14 +69,20 @@ addPieceToBoard _ _ _ rotation = error "not implemented yet"
 
 completeUserTurn :: (Board, Player) -> IO (Board, Player)
 completeUserTurn (board, player) = do
+	printToUser player
+	putStr "Enter piece number: "
+	pieceIndexStr <- getLine
+	putStr "Enter x: "
 	x <- getLine
+	putStr "Enter y: "
 	y <- getLine
-	pieceNum <- getLine
 	let
 		point = Point (read x) (read y)
-		piece = ((pieces player) !! read pieceNum)
+		pieceIndex = (read pieceIndexStr) - 1
+		piece = ((pieces player) !! pieceIndex)
 		updatedBoard = addPieceToBoard board piece point 0
-	return (updatedBoard, player)
+		updatedPlayer = removePiece player pieceIndex
+	return (updatedBoard, updatedPlayer)
 
 playGame :: (Board, Player) -> IO Board
 playGame (board, player) = do
