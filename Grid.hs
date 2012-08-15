@@ -3,6 +3,7 @@ module Grid (
 	containsPoint,
 	height,
 	itemAt,
+	safeItemAt,
 	itemIndex,
 	changeItemAt,
 	changeGridAt
@@ -37,6 +38,11 @@ itemAt :: Grid t -> Point -> t
 itemAt grid point
 	| not $ containsPoint grid point = error "index out of range"
 	| otherwise = array grid !! itemIndex grid point
+
+safeItemAt :: Grid t -> Point -> [t]
+safeItemAt grid point
+	| not $ containsPoint grid point = []
+	| otherwise = [itemAt grid point]
 
 changeItemAt :: Grid t -> t -> Point -> Grid t
 changeItemAt grid newItem point = 
