@@ -8,7 +8,9 @@ module Grid (
 	itemIndex,
 	changeItemAt,
 	changeGridAt,
-	flipX,
+
+	flipAboutVertical,
+
 	rotate90,
 	rotate180,
 	rotate270,
@@ -76,8 +78,8 @@ changeGridAt oldGrid newGrid point
 		pointList = ([(itemPoint newGrid index) | index <- take (length $ array newGrid) [0..]])
 		in changeItemsAt oldGrid itemList pointList
 
-flipX :: Grid t -> Grid t
-flipX grid = let
+flipAboutVertical :: Grid t -> Grid t
+flipAboutVertical grid = let
 	newArray = [itemAt grid $ Point ((width grid) - x - 1) y | Point x y <- range (Point 0 0) (maxPoint grid)]
 	newWidth = width grid
 	newGrid = Grid newArray newWidth
@@ -90,7 +92,7 @@ rotate90flipX grid = let
 	newGrid = Grid newArray newWidth
 	in newGrid
 
-rotate90 = flipX . rotate90flipX
+rotate90 = flipAboutVertical . rotate90flipX
 
 rotate180 :: Grid t -> Grid t
 rotate180 grid = Grid (reverse $ array grid) (width grid)
