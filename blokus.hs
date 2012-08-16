@@ -66,7 +66,13 @@ completeUserTurn (board, player) = do
 		piece = ((pieces player) !! pieceIndex)
 		updatedBoard = addPieceToBoard board piece point 0
 		updatedPlayer = removePiece player pieceIndex
-	return (updatedBoard, updatedPlayer)
+	putStr $ displayForPlayer updatedBoard updatedPlayer
+	putStr "Is this correct? (y/n): "
+	continue <- getLine
+	if continue == "y" || continue == "Y" then
+		return (updatedBoard, updatedPlayer)
+	else
+		completeUserTurn (board, player)
 
 playGame :: (Board, [Player]) -> IO Board
 playGame (board, players) = do
