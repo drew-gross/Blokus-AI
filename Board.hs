@@ -34,10 +34,11 @@ sidesOfPoint (Board grid _) point
 					(safeItemAt grid $ downPoint point)
 
 isPointOpenToColor :: Board -> Color -> Point -> Bool
-isPointOpenToColor board color (Point 0 0) = itemAt (grid board) (Point 0 0) == Empty
-isPointOpenToColor board color point = (color `elem` (cornersOfPoint board point)) && 
-												(not (color `elem` sidesOfPoint board point)) && 
-												((itemAt (grid board) point) == Empty)
+isPointOpenToColor board color point 
+	| point `elem` startPoints board && itemAt (grid board) point == Empty = True
+	| otherwise = (color `elem` (cornersOfPoint board point)) && 
+				  (not (color `elem` sidesOfPoint board point)) && 
+				  ((itemAt (grid board) point) == Empty)
 
 displayChar :: Board -> Color -> Point -> Char
 displayChar board color point

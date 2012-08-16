@@ -15,7 +15,7 @@ module Point
 	range
 ) where
 
-data Point = Point {x :: Int, y :: Int} deriving (Show)
+data Point = Point {x :: Int, y :: Int} deriving (Show, Eq)
 
 plus :: Point -> Point -> Point
 plus (Point x1 y1) (Point x2 y2) = Point (x1 + x2) (y1 + y2)

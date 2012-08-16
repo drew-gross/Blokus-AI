@@ -14,9 +14,9 @@ prevPoint piece (Point 0 y) = Point (width piece - 1) (y - 1)
 prevPoint piece point = Point (x point - 1) (y point)
 
 defaultSize = 14
-defaultStartPoints = [Point 5 5, Point 10 10]
+defaultStartPoints = [Point 4 4, Point 9 9]
 newBoard = Board (Grid (take (defaultSize * defaultSize) $ repeat Empty) defaultSize) defaultStartPoints
-newPlayer = (Player 
+newRedPlayer = (Player 
 			(
 			 [
 			 Grid [Red] 1, 
@@ -27,6 +27,17 @@ newPlayer = (Player
 			 ]
 			)
 			 Red)
+newBluePlayer = (Player 
+			(
+			 [
+			 Grid [Blue] 1, 
+			 Grid [Blue, Empty, Blue, Blue] 2,
+			 Grid [Blue, Blue] 1,
+			 Grid [Blue, Blue, Blue, Blue] 2,
+			 Grid [Blue, Blue, Blue] 1
+			 ]
+			)
+			 Blue)
 
 addPieceSquareToBoard :: Board -> Piece -> Point -> Point -> Board
 addPieceSquareToBoard board piece boardLocation (Point 0 0) = Board (changeItemAt (grid board) (itemAt piece (Point 0 0)) boardLocation) (startPoints board)
@@ -57,10 +68,10 @@ completeUserTurn (board, player) = do
 		updatedPlayer = removePiece player pieceIndex
 	return (updatedBoard, updatedPlayer)
 
-playGame :: (Board, Player) -> IO Board
-playGame (board, player) = do
-	putStr $ displayForPlayer board player
-	(nextBoard, nextPlayer) <- completeUserTurn (board, player)
-	playGame (nextBoard, nextPlayer)
+playGame :: (Board, [Player]) -> IO Board
+playGame (board, players) = do
+	putStr $ displayForPlayer board (head players)
+	(nextBoard, nextPlayer) <- completeUserTurn (board, head players)
+	playGame (nextBoard, (tail players) ++ [nextPlayer])
 
-main = playGame (newBoard, newPlayer)
+main = playGame (newBoard, [newRedPlayer, newBluePlayer])
