@@ -38,4 +38,4 @@ dlPoint = downPoint . leftPoint
 drPoint = downPoint . rightPoint
 
 range :: Point -> Point -> [Point]
-range (Point startX startY) (Point endX endY) = [Point x y | x <- [startX..endX], y <- [startY..endY]]
+range (Point startX startY) (Point endX endY) = [Point x y | y <- [startX..endX], x <- [startY..endY]]

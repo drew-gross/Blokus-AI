@@ -59,8 +59,8 @@ completeUserTurn (board, player) = do
 
 playGame :: (Board, Player) -> IO Board
 playGame (board, player) = do
+	putStr $ displayForPlayer board player
 	(nextBoard, nextPlayer) <- completeUserTurn (board, player)
-	putStr $ displayForPlayer nextBoard nextPlayer
 	playGame (nextBoard, nextPlayer)
 
 main = playGame (newBoard, newPlayer)
