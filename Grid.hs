@@ -7,10 +7,15 @@ module Grid (
 	safeItemAt,
 	itemIndex,
 	changeItemAt,
-	changeGridAt
+	changeGridAt,
+	flipX,
+	rotate90,
+	rotate180,
+	rotate270,
 ) where
 	
 import Data.List.Split
+import Debug.Trace
 
 import Point
 import Utilities
@@ -70,3 +75,24 @@ changeGridAt oldGrid newGrid point
 		itemList = (array oldGrid)
 		pointList = ([(itemPoint newGrid index) | index <- take (length $ array newGrid) [0..]])
 		in changeItemsAt oldGrid itemList pointList
+
+flipX :: Grid t -> Grid t
+flipX grid = let
+	newArray = [itemAt grid $ Point ((width grid) - x - 1) y | Point x y <- range (Point 0 0) (maxPoint grid)]
+	newWidth = width grid
+	newGrid = Grid newArray newWidth
+	in newGrid
+
+rotate90flipX :: Grid t -> Grid t
+rotate90flipX grid = let
+	newArray = [itemAt grid point | point <- transposeRange (Point 0 0) (maxPoint grid)]
+	newWidth = height grid
+	newGrid = Grid newArray newWidth
+	in newGrid
+
+rotate90 = flipX . rotate90flipX
+
+rotate180 :: Grid t -> Grid t
+rotate180 grid = Grid (reverse $ array grid) (width grid)
+
+rotate270  = rotate90 . rotate180
