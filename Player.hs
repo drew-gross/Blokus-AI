@@ -7,8 +7,7 @@ module Player(
 import Color
 import Grid
 import Utilities
-
-type Piece = Grid Color
+import Piece
 
 data Player = Player {pieces :: [Piece], color :: Color} deriving (Show)
 

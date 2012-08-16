@@ -6,12 +6,11 @@ import Grid
 import Utilities
 import Player
 import Board
-
-type Piece = Grid Color
+import Piece
 
 prevPoint :: Piece -> Point -> Point
-prevPoint piece (Point 0 y) = Point (width piece - 1) (y - 1)
-prevPoint piece point = Point (x point - 1) (y point)
+prevPoint (Piece grid) (Point 0 y) = Point (width grid - 1) (y - 1)
+prevPoint _ point = Point (x point - 1) (y point)
 
 defaultSize = 14
 defaultStartPoints = [Point 4 4, Point 9 9]
@@ -19,36 +18,38 @@ newBoard = Board (Grid (take (defaultSize * defaultSize) $ repeat Empty) default
 newRedPlayer = (Player 
 			(
 			 [
-			 Grid [Red] 1, 
-			 Grid [Red, Empty, Red, Red] 2,
-			 Grid [Red, Red] 1,
-			 Grid [Red, Red, Red, Red] 2,
-			 Grid [Red, Red, Red] 1
+			 Piece $ Grid [Red, Red, Red, Red, Red, Empty] 3,
+			 Piece $ Grid [Red] 1, 
+			 Piece $ Grid [Red, Empty, Red, Red] 2,
+			 Piece $ Grid [Red, Red] 1,
+			 Piece $ Grid [Red, Red, Red, Red] 2,
+			 Piece $ Grid [Red, Red, Red] 1
 			 ]
 			)
 			 Red)
 newBluePlayer = (Player 
 			(
 			 [
-			 Grid [Blue] 1, 
-			 Grid [Blue, Empty, Blue, Blue] 2,
-			 Grid [Blue, Blue] 1,
-			 Grid [Blue, Blue, Blue, Blue] 2,
-			 Grid [Blue, Blue, Blue] 1
+			 Piece $ Grid [Blue, Blue, Blue, Blue, Blue, Empty] 3,
+			 Piece $ Grid [Blue] 1, 
+			 Piece $ Grid [Blue, Empty, Blue, Blue] 2,
+			 Piece $ Grid [Blue, Blue] 1,
+			 Piece $ Grid [Blue, Blue, Blue, Blue] 2,
+			 Piece $ Grid [Blue, Blue, Blue] 1
 			 ]
 			)
 			 Blue)
 
 addPieceSquareToBoard :: Board -> Piece -> Point -> Point -> Board
-addPieceSquareToBoard board piece boardLocation (Point 0 0) = Board (changeItemAt (grid board) (itemAt piece (Point 0 0)) boardLocation) (startPoints board)
+addPieceSquareToBoard board piece boardLocation (Point 0 0) = Board (changeItemAt (Board.grid board) (itemAt (Piece.grid piece) (Point 0 0)) boardLocation) (startPoints board)
 addPieceSquareToBoard board piece boardLocation pieceLocation = 
 	let	nextPieceLocation = (prevPoint piece pieceLocation)
-		color = (itemAt piece pieceLocation)
-		updatedGrid = (changeItemAt (grid board) color (boardLocation `plus` pieceLocation))
+		color = (itemAt (Piece.grid piece) pieceLocation)
+		updatedGrid = (changeItemAt (Board.grid board) color (boardLocation `plus` pieceLocation))
 	in addPieceSquareToBoard (Board updatedGrid (startPoints board)) piece boardLocation nextPieceLocation
 
 addPieceToBoard :: Board -> Piece -> Point -> Int -> Board
-addPieceToBoard board piece boardPoint 0 = addPieceSquareToBoard board piece boardPoint (maxPoint piece)
+addPieceToBoard board piece boardPoint 0 = addPieceSquareToBoard board piece boardPoint (maxPoint $ Piece.grid piece)
 addPieceToBoard _ _ _ rotation = error "not implemented yet"
 
 completeUserTurn :: (Board, Player) -> IO (Board, Player)
