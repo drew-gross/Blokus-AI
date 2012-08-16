@@ -1,10 +1,15 @@
 module Board(
-	Board(Board, grid, startPoints)
+	Board(Board, grid, startPoints),
+	displayChar,
+	displayForPlayer
 ) where
+
+import Data.List.Split
 
 import Grid
 import Color
 import Point
+import Player
 import Utilities
 
 data Board = Board {grid :: Grid Color, startPoints :: [Point]}
@@ -33,3 +38,18 @@ isPointOpenToColor board color (Point 0 0) = itemAt (grid board) (Point 0 0) == 
 isPointOpenToColor board color point = (color `elem` (cornersOfPoint board point)) && 
 												(not (color `elem` sidesOfPoint board point)) && 
 												((itemAt (grid board) point) == Empty)
+
+displayChar :: Board -> Color -> Point -> Char
+displayChar board color point
+	| itemAt (grid board) point == Red =     'R'
+	| itemAt (grid board) point == Green =   'G'
+	| itemAt (grid board) point == Blue =    'B'
+	| itemAt (grid board) point == Yellow =  'Y'
+	| isPointOpenToColor board color point = 'O'
+	| otherwise = '.'
+
+displayForPlayer :: Board -> Player -> String
+displayForPlayer board player = let
+	chars = map (displayChar board (color player)) (range (Point 0 0) (maxPoint $ grid board))
+	splitChars = splitEvery (width $ grid board) chars 
+	in unlines splitChars

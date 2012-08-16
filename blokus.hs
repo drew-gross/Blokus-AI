@@ -13,9 +13,6 @@ prevPoint :: Piece -> Point -> Point
 prevPoint piece (Point 0 y) = Point (width piece - 1) (y - 1)
 prevPoint piece point = Point (x point - 1) (y point)
 
-maxPoint :: Piece -> Point
-maxPoint piece = Point ((width piece) - 1) ((height piece) - 1)
-
 defaultSize = 14
 defaultStartPoints = [Point 5 5, Point 10 10]
 newBoard = Board (Grid (take (defaultSize * defaultSize) $ repeat Empty) defaultSize) defaultStartPoints
@@ -63,7 +60,7 @@ completeUserTurn (board, player) = do
 playGame :: (Board, Player) -> IO Board
 playGame (board, player) = do
 	(nextBoard, nextPlayer) <- completeUserTurn (board, player)
-	putStr $ showToUser nextBoard
+	putStr $ displayForPlayer nextBoard nextPlayer
 	playGame (nextBoard, nextPlayer)
 
 main = playGame (newBoard, newPlayer)

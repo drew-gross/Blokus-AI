@@ -10,7 +10,9 @@ module Point
 	urPoint,
 	dlPoint,
 	drPoint,
-	plus
+	plus,
+
+	range
 ) where
 
 data Point = Point {x :: Int, y :: Int} deriving (Show)
@@ -34,3 +36,6 @@ ulPoint = upPoint . leftPoint
 urPoint = upPoint . rightPoint
 dlPoint = downPoint . leftPoint
 drPoint = downPoint . rightPoint
+
+range :: Point -> Point -> [Point]
+range (Point startX startY) (Point endX endY) = [Point x y | x <- [startX..endX], y <- [startY..endY]]

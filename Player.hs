@@ -1,5 +1,5 @@
 module Player(
-	Player(Player),
+	Player(Player, color),
 	pieces,
 	removePiece
 ) where
