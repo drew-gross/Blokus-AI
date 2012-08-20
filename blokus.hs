@@ -57,14 +57,16 @@ completeUserTurn (board, player) = do
 	printToUser player
 	putStr "Enter piece number: "
 	pieceIndexStr <- getLine
+	let 
+		pieceIndex = read pieceIndexStr - 1
+		piece = pieces player !! pieceIndex
+	printToUser $ rotations piece
 	putStr "Enter x: "
 	x <- getLine
 	putStr "Enter y: "
 	y <- getLine
 	let
 		point = Point (read x) (read y)
-		pieceIndex = (read pieceIndexStr) - 1
-		piece = ((pieces player) !! pieceIndex)
 		updatedBoard = addPieceToBoard board piece point 0
 		updatedPlayer = removePiece player pieceIndex
 	putStr $ displayForPlayer updatedBoard updatedPlayer
