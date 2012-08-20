@@ -48,9 +48,8 @@ addPieceSquareToBoard board piece boardLocation pieceLocation =
 		updatedGrid = (changeItemAt (Board.grid board) color (boardLocation `plus` pieceLocation))
 	in addPieceSquareToBoard (Board updatedGrid (startPoints board)) piece boardLocation nextPieceLocation
 
-addPieceToBoard :: Board -> Piece -> Point -> Int -> Board
-addPieceToBoard board piece boardPoint 0 = addPieceSquareToBoard board piece boardPoint (maxPoint $ Piece.grid piece)
-addPieceToBoard _ _ _ rotation = error "not implemented yet"
+addPieceToBoard :: Board -> Piece -> Point -> Board
+addPieceToBoard board piece boardPoint = addPieceSquareToBoard board piece boardPoint (maxPoint $ Piece.grid piece)
 
 completeUserTurn :: (Board, Player) -> IO (Board, Player)
 completeUserTurn (board, player) = do
@@ -60,14 +59,19 @@ completeUserTurn (board, player) = do
 	let 
 		pieceIndex = read pieceIndexStr - 1
 		piece = pieces player !! pieceIndex
-	printToUser $ rotations piece
-	putStr "Enter x: "
-	x <- getLine
-	putStr "Enter y: "
-	y <- getLine
+	putStr "Enter rotation number:\n"
+	printNumberedListToUser $ rotations piece
+	rotationNumberStr <- getLine
 	let
-		point = Point (read x) (read y)
-		updatedBoard = addPieceToBoard board piece point 0
+		rotationNumber = read rotationNumberStr - 1
+		rotatedPiece = rotations piece !! rotationNumber
+	putStr "Enter x: "
+	xStr <- getLine
+	putStr "Enter y: "
+	yStr <- getLine
+	let
+		point = Point (read xStr) (read yStr)
+		updatedBoard = addPieceToBoard board rotatedPiece point
 		updatedPlayer = removePiece player pieceIndex
 	putStr $ displayForPlayer updatedBoard updatedPlayer
 	putStr "Is this correct? (y/n): "

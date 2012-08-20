@@ -2,6 +2,8 @@ module Utilities(
 	ShowToUser,
 	showToUser,
 	printToUser,
+	showNumberedListToUser,
+	printNumberedListToUser,
 	initOrEmpty,
 	removeItem,
 ) where
@@ -14,6 +16,16 @@ instance (ShowToUser a) => ShowToUser [a] where
 
 printToUser :: ShowToUser a => a -> IO ()
 printToUser = putStrLn . showToUser
+
+showNumberedListToUserHelper :: ShowToUser t => [t] -> Int -> String
+showNumberedListToUserHelper [] _ = ""
+showNumberedListToUserHelper list count = show count ++ "\n" ++ (showToUser $ head list) ++ showNumberedListToUserHelper (tail list) (count + 1) 
+
+showNumberedListToUser :: ShowToUser t => [t] -> String
+showNumberedListToUser list = showNumberedListToUserHelper list 1
+
+printNumberedListToUser :: ShowToUser t => [t] -> IO ()
+printNumberedListToUser = putStrLn . showNumberedListToUser
 
 initOrEmpty :: [a] -> [a]
 initOrEmpty [] = []
