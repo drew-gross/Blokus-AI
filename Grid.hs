@@ -2,6 +2,8 @@ module Grid (
 	Grid(Grid, width),
 	containsPoint,
 	maxPoint,
+	allPoints,
+
 	height,
 	itemAt,
 	safeItemAt,
@@ -34,6 +36,9 @@ rows (Grid array width) = splitEvery width array
 
 maxPoint :: Grid t -> Point
 maxPoint grid = Point ((width grid) - 1) ((height grid) - 1)
+
+allPoints :: Grid t -> [Point]
+allPoints grid = range (Point 0 0) (maxPoint grid)
 
 containsPoint :: Grid t -> Point -> Bool
 containsPoint grid (Point x y) = x >= 0 && x < width grid && y >= 0 && y < height grid

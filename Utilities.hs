@@ -6,6 +6,7 @@ module Utilities(
 	printNumberedListToUser,
 	initOrEmpty,
 	removeItem,
+	repeatedSingleDigits,
 ) where
 
 class ShowToUser a where
@@ -40,3 +41,5 @@ removeItem :: Int -> [a] -> [a]
 removeItem index list = let
 	pair = splitAt index list
 	in fst pair ++ (tail $ snd pair)
+
+repeatedSingleDigits = concat $ repeat $ [1..9] ++ [0]

@@ -51,8 +51,24 @@ addPieceSquareToBoard board piece boardLocation pieceLocation =
 addPieceToBoard :: Board -> Piece -> Point -> Board
 addPieceToBoard board piece boardPoint = addPieceSquareToBoard board piece boardPoint (maxPoint $ Piece.grid piece)
 
+isPieceInBounds :: Board -> Piece -> Point -> Bool
+isPieceInBounds board piece point 
+	| x point < 0 = False
+	| y point < 0 = False
+	| x (point `plus` maxPoint (Piece.grid piece)) >= width (Board.grid board) = False
+	| y (point `plus` maxPoint (Piece.grid piece)) >= height (Board.grid board) = False
+	| otherwise = True
+
+isMoveValid :: Board -> Piece -> Point -> Bool
+isMoveValid board piece point
+	| not $ isPieceInBounds board piece point = trace "piece out of bounds" False
+	| not $ and $ map (isPointValidToColor board (Piece.color piece)) (Piece.filledPoints piece) = trace "point invalid to color" False
+	| or $ map (isPointOpenToColor board (Piece.color piece)) (map (plus point) (Piece.filledPoints piece)) = True
+	| otherwise = traceShow ("no points open to color", (Piece.filledPoints piece)) False
+
 completeUserTurn :: (Board, Player) -> IO (Board, Player)
 completeUserTurn (board, player) = do
+	printToUserForPlayer board player
 	printToUser player
 	putStr "Enter piece number: "
 	pieceIndexStr <- getLine
@@ -65,25 +81,32 @@ completeUserTurn (board, player) = do
 	let
 		rotationNumber = read rotationNumberStr - 1
 		rotatedPiece = rotations piece !! rotationNumber
+	printToUserForPlayer board player
 	putStr "Enter x: "
 	xStr <- getLine
 	putStr "Enter y: "
 	yStr <- getLine
 	let
-		point = Point (read xStr) (read yStr)
+		x = (read xStr) - 1
+		y = (read yStr) - 1
+		point = Point x y
+		validMove = isMoveValid board rotatedPiece point
 		updatedBoard = addPieceToBoard board rotatedPiece point
 		updatedPlayer = removePiece player pieceIndex
-	putStr $ displayForPlayer updatedBoard updatedPlayer
-	putStr "Is this correct? (y/n): "
-	continue <- getLine
-	if continue == "y" || continue == "Y" then
-		return (updatedBoard, updatedPlayer)
-	else
+	if validMove then do
+		printToUserForPlayer updatedBoard updatedPlayer
+		putStr "Is this correct? (y/n): "
+		continue <- getLine
+		if continue == "y" then
+			return (updatedBoard, updatedPlayer)
+		else
+			completeUserTurn (board, player)
+	else do
+		putStr "Invalid Move!\n"
 		completeUserTurn (board, player)
 
 playGame :: (Board, [Player]) -> IO Board
 playGame (board, players) = do
-	putStr $ displayForPlayer board (head players)
 	(nextBoard, nextPlayer) <- completeUserTurn (board, head players)
 	playGame (nextBoard, (tail players) ++ [nextPlayer])
 

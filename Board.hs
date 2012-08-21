@@ -1,9 +1,15 @@
 module Board(
 	Board(Board, grid, startPoints),
 	displayChar,
-	displayForPlayer
+	displayBoard,
+	printBoard,
+	displayToUserForPlayer,
+	printToUserForPlayer,
+	isPointValidToColor,
+	isPointOpenToColor
 ) where
 
+import Debug.Trace
 import Data.List.Split
 
 import Grid
@@ -33,11 +39,14 @@ sidesOfPoint (Board grid _) point
 					(safeItemAt grid $ upPoint point) ++ 
 					(safeItemAt grid $ downPoint point)
 
+isPointValidToColor :: Board -> Color -> Point -> Bool
+isPointValidToColor board color point = not $ color `elem` sidesOfPoint board point
+
 isPointOpenToColor :: Board -> Color -> Point -> Bool
 isPointOpenToColor board color point 
 	| point `elem` startPoints board && itemAt (grid board) point == Empty = True
 	| otherwise = (color `elem` (cornersOfPoint board point)) && 
-				  (not (color `elem` sidesOfPoint board point)) && 
+				  isPointValidToColor board color point && 
 				  ((itemAt (grid board) point) == Empty)
 
 displayChar :: Board -> Color -> Point -> Char
@@ -49,8 +58,15 @@ displayChar board color point
 	| isPointOpenToColor board color point = 'O'
 	| otherwise = '.'
 
-displayForPlayer :: Board -> Player -> String
-displayForPlayer board player = let
+displayBoard :: Board -> Player -> String
+displayBoard board player = let
 	chars = map (displayChar board (color player)) (range (Point 0 0) (maxPoint $ grid board))
 	splitChars = splitEvery (width $ grid board) chars 
 	in unlines splitChars
+
+printBoard board = putStr . (displayBoard board)
+
+displayToUserForPlayer :: Board -> Player -> String
+displayToUserForPlayer board player = " 12345678901234\n" ++ unlines (map (\tup -> fst tup ++ snd tup) (zip (map show repeatedSingleDigits) (lines $ displayBoard board player)))
+
+printToUserForPlayer board = putStr . (displayToUserForPlayer board)
