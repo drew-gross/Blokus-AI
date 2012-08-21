@@ -3,7 +3,7 @@ import Debug.Trace
 import Color
 import Point
 import Grid
-import Utilities
+import Display
 import Player
 import Board
 import Piece
@@ -40,16 +40,16 @@ newBluePlayer = (Player
 			)
 			 Blue)
 
-addPieceSquareToBoard :: Board -> Piece -> Point -> Point -> Board
-addPieceSquareToBoard board piece boardLocation (Point 0 0) = Board (changeItemAt (Board.grid board) (itemAt (Piece.grid piece) (Point 0 0)) boardLocation) (startPoints board)
-addPieceSquareToBoard board piece boardLocation pieceLocation = 
+addPieceToBoardHelper :: Board -> Piece -> Point -> Point -> Board
+addPieceToBoardHelper board piece boardLocation (Point 0 0) = Board (changeItemAt (Board.grid board) (itemAt (Piece.grid piece) (Point 0 0)) boardLocation) (startPoints board)
+addPieceToBoardHelper board piece boardLocation pieceLocation = 
 	let	nextPieceLocation = (prevPoint piece pieceLocation)
 		color = (itemAt (Piece.grid piece) pieceLocation)
 		updatedGrid = (changeItemAt (Board.grid board) color (boardLocation `plus` pieceLocation))
-	in addPieceSquareToBoard (Board updatedGrid (startPoints board)) piece boardLocation nextPieceLocation
+	in addPieceToBoardHelper (Board updatedGrid (startPoints board)) piece boardLocation nextPieceLocation
 
 addPieceToBoard :: Board -> Piece -> Point -> Board
-addPieceToBoard board piece boardPoint = addPieceSquareToBoard board piece boardPoint (maxPoint $ Piece.grid piece)
+addPieceToBoard board piece boardPoint = addPieceToBoardHelper board piece boardPoint (maxPoint $ Piece.grid piece)
 
 isPieceInBounds :: Board -> Piece -> Point -> Bool
 isPieceInBounds board piece point 
@@ -69,14 +69,14 @@ isMoveValid board piece point
 completeUserTurn :: (Board, Player) -> IO (Board, Player)
 completeUserTurn (board, player) = do
 	printToUserForPlayer board player
-	printToUser player
+	printDisplay player
 	putStr "Enter piece number: "
 	pieceIndexStr <- getLine
 	let 
 		pieceIndex = read pieceIndexStr - 1
 		piece = pieces player !! pieceIndex
 	putStr "Enter rotation number:\n"
-	printNumberedListToUser $ rotations piece
+	printDisplayNumberedList $ rotations piece
 	rotationNumberStr <- getLine
 	let
 		rotationNumber = read rotationNumberStr - 1

@@ -6,15 +6,16 @@ module Player(
 
 import Color
 import Grid
-import Utilities
+import Display
 import Piece
+import Utilities
 
 data Player = Player {pieces :: [Piece], color :: Color} deriving (Show)
 
-instance ShowToUser Player where
-	showToUser player = let
+instance Display Player where
+	display player = let
 		pieceAnnotations = ["Piece " ++ show num ++ ":\n" | num <- [1..]]
-		pieceStrings = map showToUser (pieces player)
+		pieceStrings = map display (pieces player)
 		pairs = zip pieceAnnotations pieceStrings
 		in concat $ map (\pair -> fst pair ++ snd pair) pairs
 

@@ -1,32 +1,9 @@
 module Utilities(
-	ShowToUser,
-	showToUser,
-	printToUser,
-	showNumberedListToUser,
-	printNumberedListToUser,
 	initOrEmpty,
 	removeItem,
 	repeatedSingleDigits,
+	concatTuple,
 ) where
-
-class ShowToUser a where
-	showToUser :: a -> String
-
-instance (ShowToUser a) => ShowToUser [a] where
-	showToUser list = concatMap showToUser list ++ "\n"
-
-printToUser :: ShowToUser a => a -> IO ()
-printToUser = putStrLn . showToUser
-
-showNumberedListToUserHelper :: ShowToUser t => [t] -> Int -> String
-showNumberedListToUserHelper [] _ = ""
-showNumberedListToUserHelper list count = show count ++ "\n" ++ (showToUser $ head list) ++ showNumberedListToUserHelper (tail list) (count + 1) 
-
-showNumberedListToUser :: ShowToUser t => [t] -> String
-showNumberedListToUser list = showNumberedListToUserHelper list 1
-
-printNumberedListToUser :: ShowToUser t => [t] -> IO ()
-printNumberedListToUser = putStrLn . showNumberedListToUser
 
 initOrEmpty :: [a] -> [a]
 initOrEmpty [] = []
@@ -43,3 +20,5 @@ removeItem index list = let
 	in fst pair ++ (tail $ snd pair)
 
 repeatedSingleDigits = concat $ repeat $ [1..9] ++ [0]
+
+concatTuple tup = fst tup ++ snd tup

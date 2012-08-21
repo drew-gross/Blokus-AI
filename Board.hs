@@ -1,7 +1,6 @@
 module Board(
 	Board(Board, grid, startPoints),
-	displayChar,
-	displayBoard,
+	displayForPlayer,
 	printBoard,
 	displayToUserForPlayer,
 	printToUserForPlayer,
@@ -16,12 +15,13 @@ import Grid
 import Color
 import Point
 import Player
+import Display
 import Utilities
 
 data Board = Board {grid :: Grid Color, startPoints :: [Point]}
 
-instance ShowToUser Board where
-	showToUser = showToUser . grid
+instance Display Board where
+	display = display . grid
 
 cornersOfPoint :: Board -> Point -> [Color]
 cornersOfPoint (Board grid _) point
@@ -58,15 +58,15 @@ displayChar board color point
 	| isPointOpenToColor board color point = 'O'
 	| otherwise = '.'
 
-displayBoard :: Board -> Player -> String
-displayBoard board player = let
+displayForPlayer :: Board -> Player -> String
+displayForPlayer board player = let
 	chars = map (displayChar board (color player)) (range (Point 0 0) (maxPoint $ grid board))
 	splitChars = splitEvery (width $ grid board) chars 
 	in unlines splitChars
 
-printBoard board = putStr . (displayBoard board)
+printBoard board = putStr . (displayForPlayer board)
 
 displayToUserForPlayer :: Board -> Player -> String
-displayToUserForPlayer board player = " 12345678901234\n" ++ unlines (map (\tup -> fst tup ++ snd tup) (zip (map show repeatedSingleDigits) (lines $ displayBoard board player)))
+displayToUserForPlayer board player = " 12345678901234\n" ++ unlines (map concatTuple (zip (map show repeatedSingleDigits) (lines $ displayForPlayer board player)))
 
 printToUserForPlayer board = putStr . (displayToUserForPlayer board)

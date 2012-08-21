@@ -10,12 +10,12 @@ import Data.List
 import Point
 import Grid
 import Color
-import Utilities
+import Display
 
 data Piece = Piece {grid :: Grid Color} deriving (Show, Eq)
 
-instance ShowToUser Piece where
-	showToUser =  showToUser . grid
+instance Display Piece where
+	display =  display . grid
 
 color :: Piece -> Color
 color (Piece (Grid array width)) = head $ filter (/= Empty) array

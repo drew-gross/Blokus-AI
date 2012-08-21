@@ -3,13 +3,13 @@ module Color
 	Color(Yellow, Red, Green, Blue, Empty)
 ) where
 
-import Utilities
+import Display
 
 data Color = Yellow | Red | Green | Blue | Empty deriving (Show, Eq)
 
-instance ShowToUser Color where
-	showToUser Yellow = "Y"
-	showToUser Red = "R"
-	showToUser Green = "G"
-	showToUser Blue = "B"
-	showToUser Empty = "."
+instance Display Color where
+	display Yellow = "Y"
+	display Red = "R"
+	display Green = "G"
+	display Blue = "B"
+	display Empty = "."

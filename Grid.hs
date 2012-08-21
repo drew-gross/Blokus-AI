@@ -21,12 +21,12 @@ module Grid (
 import Data.List.Split
 
 import Point
-import Utilities
+import Display
 
 data Grid t = Grid {array :: [t], width :: Int} deriving (Show, Eq)
 
-instance ShowToUser t => ShowToUser (Grid t) where
-	showToUser = showToUser . rows
+instance Display t => Display (Grid t) where
+	display = display . rows
 
 height :: Grid t -> Int
 height (Grid array width) = (length array) `div` width
