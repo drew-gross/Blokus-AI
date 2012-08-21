@@ -3,7 +3,6 @@ module Piece(
 	rotations,
 	color,
 	filledPoints,
-	Piece.allPoints
 ) where
 
 import Data.List
@@ -29,9 +28,7 @@ rotations (Piece grid) = map (Piece) (nub $ map ($ grid) [id,
 											 			  flipAboutVertical, 
 											 			  flipAboutVertical . rotate90, 
 											 			  flipAboutVertical . rotate180, 
-											 			  flipAboutVertical . rotate270])
-
-allPoints = Grid.allPoints . grid
+											 			  flipAboutVertical . rotate270])	
 
 filledPoints :: Piece -> [Point]
-filledPoints (Piece grid) = filter (\point -> itemAt grid point /= Empty) (Grid.allPoints grid)
+filledPoints (Piece grid) = filter (\point -> itemAt grid point /= Empty) (allPoints grid)

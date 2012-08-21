@@ -62,9 +62,9 @@ isPieceInBounds board piece point
 isMoveValid :: Board -> Piece -> Point -> Bool
 isMoveValid board piece point
 	| not $ isPieceInBounds board piece point = trace "piece out of bounds" False
-	| not $ and $ map (isPointValidToColor board (Piece.color piece)) (Piece.filledPoints piece) = trace "point invalid to color" False
-	| or $ map (isPointOpenToColor board (Piece.color piece)) (map (plus point) (Piece.filledPoints piece)) = True
-	| otherwise = traceShow ("no points open to color", (Piece.filledPoints piece)) False
+	| not $ and $ map (isPointValidToColor board (Piece.color piece)) (filledPoints piece) = trace "point invalid to color" False
+	| or $ map (isPointOpenToColor board (Piece.color piece)) (map (plus point) (filledPoints piece)) = True
+	| otherwise = traceShow ("no points open to color", (filledPoints piece)) False
 
 completeUserTurn :: (Board, Player) -> IO (Board, Player)
 completeUserTurn (board, player) = do
