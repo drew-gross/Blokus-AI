@@ -22,7 +22,7 @@ import Debug.Trace
 import Point
 import Utilities
 
-data Grid t = Grid {array :: [t], width :: Int} deriving (Show)
+data Grid t = Grid {array :: [t], width :: Int} deriving (Show, Eq)
 
 instance ShowToUser t => ShowToUser (Grid t) where
 	showToUser = showToUser . rows
