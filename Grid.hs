@@ -17,7 +17,6 @@ module Grid (
 ) where
 	
 import Data.List.Split
-import Debug.Trace
 
 import Point
 import Utilities
@@ -85,14 +84,14 @@ flipAboutVertical grid = let
 	newGrid = Grid newArray newWidth
 	in newGrid
 
-rotate90flipX :: Grid t -> Grid t
-rotate90flipX grid = let
+transpose :: Grid t -> Grid t
+transpose grid = let
 	newArray = [itemAt grid point | point <- transposeRange (Point 0 0) (maxPoint grid)]
 	newWidth = height grid
 	newGrid = Grid newArray newWidth
 	in newGrid
 
-rotate90 = flipAboutVertical . rotate90flipX
+rotate90 = flipAboutVertical . transpose
 
 rotate180 :: Grid t -> Grid t
 rotate180 grid = Grid (reverse $ array grid) (width grid)
