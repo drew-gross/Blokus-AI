@@ -41,7 +41,7 @@ newBluePlayer = (Player
 			 Blue)
 
 addPieceToBoardHelper :: Board -> Piece -> Point -> Point -> Board
-addPieceToBoardHelper board piece boardLocation (Point 0 0) = Board (changeItemAt (Board.grid board) (itemAt (Piece.grid piece) (Point 0 0)) boardLocation) (startPoints board)
+addPieceToBoardHelper board piece boardLocation (Point 0 0) = Board (changeItemAt (Board.grid board) (itemAt (Piece.grid piece) origin) boardLocation) (startPoints board)
 addPieceToBoardHelper board piece boardLocation pieceLocation = 
 	let	nextPieceLocation = (prevPoint piece pieceLocation)
 		color = (itemAt (Piece.grid piece) pieceLocation)
@@ -49,7 +49,8 @@ addPieceToBoardHelper board piece boardLocation pieceLocation =
 	in addPieceToBoardHelper (Board updatedGrid (startPoints board)) piece boardLocation nextPieceLocation
 
 addPieceToBoard :: Board -> Piece -> Point -> Board
-addPieceToBoard board piece boardPoint = addPieceToBoardHelper board piece boardPoint (maxPoint $ Piece.grid piece)
+addPieceToBoard board piece boardPoint 
+	| otherwise = addPieceToBoardHelper board piece boardPoint (maxPoint $ Piece.grid piece)
 
 isPieceInBounds :: Board -> Piece -> Point -> Bool
 isPieceInBounds board piece point 
@@ -64,7 +65,22 @@ isMoveValid board piece point
 	| not $ isPieceInBounds board piece point = trace "piece out of bounds" False
 	| not $ and $ map (isPointValidToColor board (Piece.color piece)) (filledPoints piece) = trace "point invalid to color" False
 	| or $ map (isPointOpenToColor board (Piece.color piece)) (map (plus point) (filledPoints piece)) = True
-	| otherwise = traceShow ("no points open to color", (filledPoints piece)) False
+	| otherwise = False
+
+isMoveValid2 :: Board -> ((Piece, Int), Point) -> Bool
+isMoveValid2 board move = isMoveValid board (fst $ fst move) (snd move)
+
+allInvalidMovesForPieceRotation :: Board -> (Piece, Int) -> [((Piece, Int), Point)]
+allInvalidMovesForPieceRotation board piece = map ((,) piece) (range origin ((maxPoint $ Board.grid board) `minus` (maxPoint $ Piece.grid $ fst piece)))
+
+allValidMovesForPieceRotation :: Board -> (Piece, Int) -> [((Piece, Int), Point)]
+allValidMovesForPieceRotation board piece = filter (isMoveValid2 board) (allInvalidMovesForPieceRotation board piece)
+
+allValidMovesForPiece :: Board -> (Piece, Int) -> [((Piece, Int), Point)]
+allValidMovesForPiece board piece = concatMap (allValidMovesForPieceRotation board) (zip (rotations $ fst piece) (repeat $ snd piece))
+
+allValidMovesForPlayer :: Board -> Player -> [((Piece, Int), Point)]
+allValidMovesForPlayer board player = concatMap (allValidMovesForPiece board) (piecesWithIndices player)
 
 completeUserTurn :: (Board, Player) -> IO (Board, Player)
 completeUserTurn (board, player) = do
@@ -100,9 +116,18 @@ completeUserTurn (board, player) = do
 		putStr "Invalid Move!\n"
 		completeUserTurn (board, player)
 
+completeAiTurn :: (Board, Player) -> (Board, Player)
+completeAiTurn (board, player) = let
+	((piece, pieceIndex), point) = head $ allValidMovesForPlayer board player
+	updatedBoard = addPieceToBoard board piece point
+	updatedPlayer = removePiece player pieceIndex
+	in (updatedBoard, updatedPlayer)
+
 playGame :: (Board, [Player]) -> IO Board
 playGame (board, players) = do
 	(nextBoard, nextPlayer) <- completeUserTurn (board, head players)
-	playGame (nextBoard, (tail players) ++ [nextPlayer])
+	let
+		(nextBoard2, nextPlayer2) = completeAiTurn (nextBoard, (head $ tail players))
+	playGame (nextBoard2, (tail $ tail players) ++ [nextPlayer] ++ [nextPlayer2])
 
 main = playGame (newBoard, [newRedPlayer, newBluePlayer])

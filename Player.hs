@@ -1,6 +1,6 @@
 module Player(
-	Player(Player, color),
-	pieces,
+	Player(Player, color, pieces),
+	piecesWithIndices,
 	removePiece
 ) where
 
@@ -21,3 +21,6 @@ instance Display Player where
 
 removePiece :: Player -> Int -> Player
 removePiece (Player pieces color) pieceIndex = Player (removeItem pieceIndex pieces) color
+
+piecesWithIndices :: Player -> [(Piece, Int)]
+piecesWithIndices player = zip (pieces player) [0..]

@@ -16,9 +16,9 @@ safeAccess list index = if index < 0 || index >= length list
 
 removeItem :: Int -> [a] -> [a]
 removeItem index list = let
-	pair = splitAt index list
-	in fst pair ++ (tail $ snd pair)
+	(first, second) = splitAt index list
+	in first ++ (tail $ second)
 
 repeatedSingleDigits = concat $ repeat $ [1..9] ++ [0]
 
-concatTuple tup = fst tup ++ snd tup
+concatTuple (first, second) = first ++ second

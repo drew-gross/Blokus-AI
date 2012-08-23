@@ -1,6 +1,8 @@
 module Point
 (
 	Point(Point, x, y),
+	origin,
+
 	leftPoint,
 	rightPoint,
 	upPoint,
@@ -23,6 +25,8 @@ module Point
 ) where
 
 data Point = Point {x :: Int, y :: Int} deriving (Show, Eq)
+
+origin = Point 0 0
 
 leftPoint :: Point -> Point
 leftPoint = plus $ Point (-1) 0

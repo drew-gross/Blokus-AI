@@ -60,7 +60,7 @@ displayChar board color point
 
 displayForPlayer :: Board -> Player -> String
 displayForPlayer board player = let
-	chars = map (displayChar board (color player)) (range (Point 0 0) (maxPoint $ grid board))
+	chars = map (displayChar board (color player)) (range origin (maxPoint $ grid board))
 	splitChars = splitEvery (width $ grid board) chars 
 	in unlines splitChars
 

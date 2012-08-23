@@ -38,7 +38,7 @@ maxPoint :: Grid t -> Point
 maxPoint grid = Point ((width grid) - 1) ((height grid) - 1)
 
 allPoints :: Grid t -> [Point]
-allPoints grid = range (Point 0 0) (maxPoint grid)
+allPoints grid = range origin (maxPoint grid)
 
 containsPoint :: Grid t -> Point -> Bool
 containsPoint grid (Point x y) = x >= 0 && x < width grid && y >= 0 && y < height grid
@@ -84,14 +84,14 @@ changeGridAt oldGrid newGrid point
 
 flipAboutVertical :: Grid t -> Grid t
 flipAboutVertical grid = let
-	newArray = [itemAt grid $ Point ((width grid) - x - 1) y | Point x y <- range (Point 0 0) (maxPoint grid)]
+	newArray = [itemAt grid $ Point ((width grid) - x - 1) y | Point x y <- range origin (maxPoint grid)]
 	newWidth = width grid
 	newGrid = Grid newArray newWidth
 	in newGrid
 
 transpose :: Grid t -> Grid t
 transpose grid = let
-	newArray = [itemAt grid point | point <- transposeRange (Point 0 0) (maxPoint grid)]
+	newArray = [itemAt grid point | point <- transposeRange origin (maxPoint grid)]
 	newWidth = height grid
 	newGrid = Grid newArray newWidth
 	in newGrid

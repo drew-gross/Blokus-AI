@@ -17,7 +17,7 @@ printDisplay = putStrLn . display
 
 displayNumberedListHelper :: Display t => [t] -> Int -> String
 displayNumberedListHelper [] _ = ""
-displayNumberedListHelper list count = show count ++ "\n" ++ (display $ head list) ++ displayNumberedListHelper (tail list) (count + 1) 
+displayNumberedListHelper (x:xs) count = show count ++ "\n" ++ display x ++ displayNumberedListHelper xs (count + 1) 
 
 displayNumberedList :: Display t => [t] -> String
 displayNumberedList list = displayNumberedListHelper list 1
