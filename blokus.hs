@@ -7,6 +7,7 @@ import Display
 import Player
 import Board
 import Piece
+import Move
 
 prevPoint :: Piece -> Point -> Point
 prevPoint (Piece grid) (Point 0 y) = Point (width grid - 1) (y - 1)
@@ -40,35 +41,34 @@ newBluePlayer = (Player
 			)
 			 Blue)
 
-addPieceToBoardHelper :: Board -> Piece -> Point -> Point -> Board
-addPieceToBoardHelper board piece boardLocation (Point 0 0) = Board (changeItemAt (Board.grid board) (itemAt (Piece.grid piece) origin) boardLocation) (startPoints board)
-addPieceToBoardHelper board piece boardLocation pieceLocation = 
-	let	nextPieceLocation = (prevPoint piece pieceLocation)
-		color = (itemAt (Piece.grid piece) pieceLocation)
-		updatedGrid = (changeItemAt (Board.grid board) color (boardLocation `plus` pieceLocation))
-	in addPieceToBoardHelper (Board updatedGrid (startPoints board)) piece boardLocation nextPieceLocation
+addPieceToBoardHelper :: Board -> Move -> Point -> Board
+addPieceToBoardHelper board move (Point 0 0) = Board (changeItemAt (Board.grid board) (itemAt (Piece.grid $ piece move) origin) (position move)) (startPoints board)
+addPieceToBoardHelper board move pieceLocation = 
+	let	nextPieceLocation = (prevPoint (piece move) pieceLocation)
+		color = (itemAt (Piece.grid (piece move)) pieceLocation)
+		updatedGrid = (changeItemAt (Board.grid board) color ((position move) `plus` pieceLocation))
+	in addPieceToBoardHelper (Board updatedGrid (startPoints board)) move nextPieceLocation
 
-addPieceToBoard :: Board -> Piece -> Point -> Board
-addPieceToBoard board piece boardPoint 
-	| otherwise = addPieceToBoardHelper board piece boardPoint (maxPoint $ Piece.grid piece)
+addPieceToBoard :: Board -> Move -> Board
+addPieceToBoard board move = addPieceToBoardHelper board move (maxPoint $ Piece.grid $ piece move)
 
-isPieceInBounds :: Board -> Piece -> Point -> Bool
-isPieceInBounds board piece point 
-	| x point < 0 = False
-	| y point < 0 = False
-	| x (point `plus` maxPoint (Piece.grid piece)) >= width (Board.grid board) = False
-	| y (point `plus` maxPoint (Piece.grid piece)) >= height (Board.grid board) = False
+isMoveInBounds :: Board -> Move -> Bool
+isMoveInBounds board (Move piece position)
+	| x position < 0 = False
+	| y position < 0 = False
+	| x (position `plus` maxPoint (Piece.grid piece)) >= width (Board.grid board) = False
+	| y (position `plus` maxPoint (Piece.grid piece)) >= height (Board.grid board) = False
 	| otherwise = True
 
-isMoveValid :: Board -> Piece -> Point -> Bool
-isMoveValid board piece point
-	| not $ isPieceInBounds board piece point = trace "piece out of bounds" False
-	| not $ and $ map (isPointValidToColor board (Piece.color piece)) (filledPoints piece) = trace "point invalid to color" False
-	| or $ map (isPointOpenToColor board (Piece.color piece)) (map (plus point) (filledPoints piece)) = True
+isMoveValid :: Board -> Move -> Bool
+isMoveValid board move
+	| not $ isMoveInBounds board move = trace "piece out of bounds" False
+	| not $ and $ map (isPointValidToColor board (Piece.color $ piece move)) (filledPoints $ piece move) = trace "point invalid to color" False
+	| or $ map (isPointOpenToColor board (Piece.color $ piece move)) (map (plus $ position move) (filledPoints $ piece move)) = True
 	| otherwise = False
 
 isMoveValid2 :: Board -> ((Piece, Int), Point) -> Bool
-isMoveValid2 board move = isMoveValid board (fst $ fst move) (snd move)
+isMoveValid2 board move = isMoveValid board $ Move (fst $ fst move) (snd move)
 
 allInvalidMovesForPieceRotation :: Board -> (Piece, Int) -> [((Piece, Int), Point)]
 allInvalidMovesForPieceRotation board piece = map ((,) piece) (range origin ((maxPoint $ Board.grid board) `minus` (maxPoint $ Piece.grid $ fst piece)))
@@ -101,8 +101,9 @@ completeUserTurn (board, player) = do
 	index0point <- getPoint
 	let
 		point = index0point `minus` (Point 1 1)
-		validMove = isMoveValid board rotatedPiece point
-		updatedBoard = addPieceToBoard board rotatedPiece point
+		move = Move rotatedPiece point
+		validMove = isMoveValid board move
+		updatedBoard = addPieceToBoard board move
 		updatedPlayer = removePiece player pieceIndex
 	if validMove then do
 		printToUserForPlayer updatedBoard updatedPlayer
@@ -119,7 +120,7 @@ completeUserTurn (board, player) = do
 completeAiTurn :: (Board, Player) -> (Board, Player)
 completeAiTurn (board, player) = let
 	((piece, pieceIndex), point) = head $ allValidMovesForPlayer board player
-	updatedBoard = addPieceToBoard board piece point
+	updatedBoard = addPieceToBoard board (Move piece point)
 	updatedPlayer = removePiece player pieceIndex
 	in (updatedBoard, updatedPlayer)
 
