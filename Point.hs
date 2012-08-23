@@ -16,7 +16,9 @@ module Point
 	plus,
 
 	range,
-	transposeRange
+	transposeRange,
+
+	getPoint
 ) where
 
 data Point = Point {x :: Int, y :: Int} deriving (Show, Eq)
@@ -49,3 +51,14 @@ range (Point startX startY) (Point endX endY) = [Point x y | y <- [startY..endY]
 
 transposeRange :: Point -> Point -> [Point]
 transposeRange (Point startX startY) (Point endX endY) = [Point x y | x <- [startX..endX], y <- [startY..endY]]
+
+getPoint :: IO Point
+getPoint = do
+	putStr "Enter x: "
+	xStr <- getLine
+	putStr "Enter y: "
+	yStr <- getLine
+	let
+		x = (read xStr)
+		y = (read yStr)
+	return $ Point x y

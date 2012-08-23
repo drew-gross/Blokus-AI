@@ -82,14 +82,9 @@ completeUserTurn (board, player) = do
 		rotationNumber = read rotationNumberStr - 1
 		rotatedPiece = rotations piece !! rotationNumber
 	printToUserForPlayer board player
-	putStr "Enter x: "
-	xStr <- getLine
-	putStr "Enter y: "
-	yStr <- getLine
+	index0point <- getPoint
 	let
-		x = (read xStr) - 1
-		y = (read yStr) - 1
-		point = Point x y
+		point = index0point `plus` (Point (-1) (-1))
 		validMove = isMoveValid board rotatedPiece point
 		updatedBoard = addPieceToBoard board rotatedPiece point
 		updatedPlayer = removePiece player pieceIndex
