@@ -84,7 +84,7 @@ completeUserTurn (board, player) = do
 	printToUserForPlayer board player
 	index0point <- getPoint
 	let
-		point = index0point `plus` (Point (-1) (-1))
+		point = index0point `minus` (Point 1 1)
 		validMove = isMoveValid board rotatedPiece point
 		updatedBoard = addPieceToBoard board rotatedPiece point
 		updatedPlayer = removePiece player pieceIndex

@@ -14,6 +14,7 @@ module Point
 	flipAboutYequalsX,
 
 	plus,
+	minus,
 
 	range,
 	transposeRange,
@@ -45,6 +46,9 @@ flipAboutYequalsX (Point x y) = Point y x
 
 plus :: Point -> Point -> Point
 plus (Point x1 y1) (Point x2 y2) = Point (x1 + x2) (y1 + y2)
+
+minus :: Point -> Point -> Point
+minus (Point x1 y1) (Point x2 y2) = Point (x1 - x2) (y1 - y2)
 
 range :: Point -> Point -> [Point]
 range (Point startX startY) (Point endX endY) = [Point x y | y <- [startY..endY], x <- [startX..endX]]
