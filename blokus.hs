@@ -82,29 +82,23 @@ allValidMovesForPiece board piece = concatMap (allValidMovesForPieceRotation boa
 allValidMovesForPlayer :: Board -> Player -> [((Piece, Int), Point)]
 allValidMovesForPlayer board player = concatMap (allValidMovesForPiece board) (piecesWithIndices player)
 
+read1IndexdIndex = (flip (-) 1) . read
+getPieceFromUserString player string = (pieces player) !! read1IndexdIndex string
+
 completeUserTurn :: (Board, Player) -> IO (Board, Player)
 completeUserTurn (board, player) = do
-	printToUserForPlayer board player
-	printDisplay player
-	putStr "Enter piece number: "
+	putStr $ displayToUserForPlayer board player ++ "\n" ++ (display player) ++ "\n" ++ "Enter piece number: "
 	pieceIndexStr <- getLine
-	let 
-		pieceIndex = read pieceIndexStr - 1
-		piece = pieces player !! pieceIndex
-	putStr "Enter rotation number:\n"
-	printDisplayNumberedList $ rotations piece
+	putStr $ "Enter rotation number:\n" ++ (displayNumberedList $ rotations $ getPieceFromUserString player pieceIndexStr)
 	rotationNumberStr <- getLine
-	let
-		rotationNumber = read rotationNumberStr - 1
-		rotatedPiece = rotations piece !! rotationNumber
-	printToUserForPlayer board player
+	putStr $ displayToUserForPlayer board player
 	index0point <- getPoint
 	let
 		point = index0point `minus` (Point 1 1)
-		move = Move rotatedPiece point
+		move = Move ((rotations $ getPieceFromUserString player pieceIndexStr) !! (read1IndexdIndex rotationNumberStr)) point
 		validMove = isMoveValid board move
 		updatedBoard = addPieceToBoard board move
-		updatedPlayer = removePiece player pieceIndex
+		updatedPlayer = removePiece player $ read1IndexdIndex pieceIndexStr
 	if validMove then do
 		printToUserForPlayer updatedBoard updatedPlayer
 		putStr "Is this correct? (y/n): "
