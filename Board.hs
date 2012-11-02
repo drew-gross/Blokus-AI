@@ -3,7 +3,6 @@ module Board(
 	displayForPlayer,
 	printBoard,
 	displayToUserForPlayer,
-	printToUserForPlayer,
 	isPointValidToColor,
 	isPointOpenToColor
 ) where
@@ -68,5 +67,3 @@ printBoard board = putStr . (displayForPlayer board)
 
 displayToUserForPlayer :: Board -> Player -> String
 displayToUserForPlayer board player = " 12345678901234\n" ++ unlines (map concatTuple (zip (map show repeatedSingleDigits) (lines $ displayForPlayer board player)))
-
-printToUserForPlayer board = putStr . (displayToUserForPlayer board)

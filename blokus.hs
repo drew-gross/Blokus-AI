@@ -84,27 +84,18 @@ allValidMovesForPlayer board player = concatMap (allValidMovesForPiece board) (p
 
 read1IndexdIndex = (flip (-) 1) . read
 getPieceFromUserString player string = (pieces player) !! read1IndexdIndex string
+moveFromUserInput player pieceIndexStr rotationNumberStr index0point = Move ((rotations $ getPieceFromUserString player pieceIndexStr) !! (read1IndexdIndex rotationNumberStr)) (index0point `minus` (Point 1 1))
 
 completeUserTurn :: (Board, Player) -> IO (Board, Player)
 completeUserTurn (board, player) = do
-	putStr $ displayToUserForPlayer board player ++ "\n" ++ (display player) ++ "\n" ++ "Enter piece number: "
-	pieceIndexStr <- getLine
-	putStr $ "Enter rotation number:\n" ++ (displayNumberedList $ rotations $ getPieceFromUserString player pieceIndexStr)
-	rotationNumberStr <- getLine
+	pieceIndexStr     <- prompt $ displayToUserForPlayer board player ++ "\n" ++ (display player) ++ "\n" ++ "Enter piece number: "
+	rotationNumberStr <- prompt $ "Enter rotation number:\n" ++ (displayNumberedList $ rotations $ getPieceFromUserString player pieceIndexStr)
 	putStr $ displayToUserForPlayer board player
 	index0point <- getPoint
-	let
-		point = index0point `minus` (Point 1 1)
-		move = Move ((rotations $ getPieceFromUserString player pieceIndexStr) !! (read1IndexdIndex rotationNumberStr)) point
-		validMove = isMoveValid board move
-		updatedBoard = addPieceToBoard board move
-		updatedPlayer = removePiece player $ read1IndexdIndex pieceIndexStr
-	if validMove then do
-		printToUserForPlayer updatedBoard updatedPlayer
-		putStr "Is this correct? (y/n): "
-		continue <- getLine
+	if isMoveValid board $ moveFromUserInput player pieceIndexStr rotationNumberStr index0point then do
+		continue <- prompt $ displayToUserForPlayer (addPieceToBoard board $ moveFromUserInput player pieceIndexStr rotationNumberStr index0point) (removePiece player $ read1IndexdIndex pieceIndexStr) ++ "\n" ++ "Is this correct? (y/n): "
 		if continue == "y" then
-			return (updatedBoard, updatedPlayer)
+			return (addPieceToBoard board $ moveFromUserInput player pieceIndexStr rotationNumberStr index0point, removePiece player $ read1IndexdIndex pieceIndexStr)
 		else
 			completeUserTurn (board, player)
 	else do

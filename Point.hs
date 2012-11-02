@@ -21,10 +21,19 @@ module Point
 	range,
 	transposeRange,
 
-	getPoint
+	getPoint,
+	prompt
 ) where
 
+import System.IO
+
 data Point = Point {x :: Int, y :: Int} deriving (Show, Eq)
+
+prompt :: String -> IO String
+prompt text = do
+	putStr text
+	hFlush stdout
+	getLine
 
 origin = Point 0 0
 
@@ -62,11 +71,6 @@ transposeRange (Point startX startY) (Point endX endY) = [Point x y | x <- [star
 
 getPoint :: IO Point
 getPoint = do
-	putStr "Enter x: "
-	xStr <- getLine
-	putStr "Enter y: "
-	yStr <- getLine
-	let
-		x = (read xStr)
-		y = (read yStr)
-	return $ Point x y
+	xStr <- prompt "Enter x: "
+	yStr <- prompt "Enter y: "
+	return $ Point (read xStr) (read yStr)
