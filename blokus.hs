@@ -63,9 +63,12 @@ isMoveInBounds board (Move piece position)
 isMoveValid :: Board -> Move -> Bool
 isMoveValid board move
 	| not $ isMoveInBounds board move = False
-	| not $ and $ map (isPointValidToColor board (Piece.color $ piece move)) (filledPoints $ piece move) = False
-	| or $ map (isPointOpenToColor board (Piece.color $ piece move)) (map (plus $ position move) (filledPoints $ piece move)) = True
+	| not $ and $ map (isPointValidToColor board color) pointsInPiece = False
+	| or $ map (isPointOpenToColor board color) (map (plus $ position move) pointsInPiece) = True
 	| otherwise = False
+	where
+		color = Piece.color $ piece move
+		pointsInPiece = filledPoints $ piece move
 
 isMoveValid2 :: Board -> ((Piece, Int), Point) -> Bool
 isMoveValid2 board move = isMoveValid board $ Move (fst $ fst move) (snd move)
