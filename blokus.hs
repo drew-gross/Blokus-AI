@@ -62,8 +62,8 @@ isMoveInBounds board (Move piece position)
 
 isMoveValid :: Board -> Move -> Bool
 isMoveValid board move
-	| not $ isMoveInBounds board move = trace "piece out of bounds" False
-	| not $ and $ map (isPointValidToColor board (Piece.color $ piece move)) (filledPoints $ piece move) = trace "point invalid to color" False
+	| not $ isMoveInBounds board move = False
+	| not $ and $ map (isPointValidToColor board (Piece.color $ piece move)) (filledPoints $ piece move) = False
 	| or $ map (isPointOpenToColor board (Piece.color $ piece move)) (map (plus $ position move) (filledPoints $ piece move)) = True
 	| otherwise = False
 
