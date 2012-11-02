@@ -3,7 +3,7 @@ module Board(
 	displayForPlayer,
 	printBoard,
 	displayToUserForPlayer,
-	isPointValidToColor,
+	isPointAdjacentToColor,
 	isPointOpenToColor
 ) where
 
@@ -38,14 +38,14 @@ sidesOfPoint (Board grid _) point
 					(safeItemAt grid $ upPoint point) ++ 
 					(safeItemAt grid $ downPoint point)
 
-isPointValidToColor :: Board -> Color -> Point -> Bool
-isPointValidToColor board color point = not $ color `elem` sidesOfPoint board point
+isPointAdjacentToColor :: Board -> Color -> Point -> Bool
+isPointAdjacentToColor board color point = not $ color `elem` sidesOfPoint board point
 
 isPointOpenToColor :: Board -> Color -> Point -> Bool
 isPointOpenToColor board color point 
 	| point `elem` startPoints board && itemAt (grid board) point == Empty = True
 	| otherwise = (color `elem` (cornersOfPoint board point)) && 
-				  isPointValidToColor board color point && 
+				  isPointAdjacentToColor board color point && 
 				  ((itemAt (grid board) point) == Empty)
 
 displayChar :: Board -> Color -> Point -> Char

@@ -1,7 +1,8 @@
 module Player(
 	Player(Player, color, pieces),
 	piecesWithIndices,
-	removePiece
+	removePiece,
+	newPlayer
 ) where
 
 import Color
@@ -24,3 +25,17 @@ removePiece (Player pieces color) pieceIndex = Player (removeItem pieceIndex pie
 
 piecesWithIndices :: Player -> [(Piece, Int)]
 piecesWithIndices player = zip (pieces player) [0..]
+
+newPlayer :: Color -> Player
+newPlayer color = (Player 
+			(
+			 [
+			 Piece $ Grid [color, color, color, color, color, Empty] 3,
+			 Piece $ Grid [color] 1, 
+			 Piece $ Grid [color, Empty, color, color] 2,
+			 Piece $ Grid [color, color] 1,
+			 Piece $ Grid [color, color, color, color] 2,
+			 Piece $ Grid [color, color, color] 1
+			 ]
+			)
+			 color)
