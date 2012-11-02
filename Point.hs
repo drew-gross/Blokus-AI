@@ -25,15 +25,9 @@ module Point
 	prompt
 ) where
 
-import System.IO
+import Utilities
 
 data Point = Point {x :: Int, y :: Int} deriving (Show, Eq)
-
-prompt :: String -> IO String
-prompt text = do
-	putStr text
-	hFlush stdout
-	getLine
 
 origin = Point 0 0
 

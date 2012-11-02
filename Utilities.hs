@@ -3,7 +3,10 @@ module Utilities(
 	removeItem,
 	repeatedSingleDigits,
 	concatTuple,
+	prompt,
 ) where
+
+import System.IO
 
 initOrEmpty :: [a] -> [a]
 initOrEmpty [] = []
@@ -22,3 +25,9 @@ removeItem index list = let
 repeatedSingleDigits = concat $ repeat $ [1..9] ++ [0]
 
 concatTuple (first, second) = first ++ second
+
+prompt :: String -> IO String
+prompt text = do
+	putStr text
+	hFlush stdout
+	getLine
