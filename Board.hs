@@ -4,7 +4,8 @@ module Board(
 	printBoard,
 	displayToUserForPlayer,
 	isPointAdjacentToColor,
-	isPointOpenToColor
+	isPointOpenToColor,
+	empty2PlayerBoard
 ) where
 
 import Debug.Trace
@@ -21,6 +22,12 @@ data Board = Board {grid :: Grid Color, startPoints :: [Point]}
 
 instance Display Board where
 	display = display . grid
+
+defaultSize = 14
+defaultStartPoints = [Point 4 4, Point 9 9]
+
+empty2PlayerBoard :: Board
+empty2PlayerBoard = Board (Grid (take (defaultSize * defaultSize) $ repeat Empty) defaultSize) defaultStartPoints
 
 cornersOfPoint :: Board -> Point -> [Color]
 cornersOfPoint (Board grid _) point

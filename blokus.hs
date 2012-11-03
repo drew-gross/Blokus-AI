@@ -13,10 +13,6 @@ prevPoint :: Piece -> Point -> Point
 prevPoint (Piece grid) (Point 0 y) = Point (width grid - 1) (y - 1)
 prevPoint _ point = Point (x point - 1) (y point)
 
-defaultSize = 14
-defaultStartPoints = [Point 4 4, Point 9 9]
-newBoard = Board (Grid (take (defaultSize * defaultSize) $ repeat Empty) defaultSize) defaultStartPoints
-
 addPieceToBoardHelper :: Board -> Move -> Point -> Board
 addPieceToBoardHelper board move (Point 0 0) = Board (changeItemAt (Board.grid board) (itemAt (Piece.grid $ piece move) origin) (position move)) (startPoints board)
 addPieceToBoardHelper board move pieceLocation = 
@@ -96,4 +92,4 @@ playGame (board, players) = do
 		(nextBoard2, nextPlayer2) = completeAiTurn (nextBoard, (head $ tail players))
 	playGame (nextBoard2, (tail $ tail players) ++ [nextPlayer] ++ [nextPlayer2])
 
-main = playGame (newBoard, [newPlayer Red, newPlayer Blue])
+main = playGame (empty2PlayerBoard, [newPlayer Red, newPlayer Blue])
