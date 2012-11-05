@@ -63,35 +63,34 @@ changeItemAt :: Grid t -> t -> Point -> Grid t
 changeItemAt grid newItem point = 
 	let
 		newItemIndex = itemIndex grid point
-		indexItemPairs = zip [0..] (array grid)
-	in Grid [if (fst itemIndexPair) == newItemIndex then newItem else (snd itemIndexPair) | itemIndexPair <- indexItemPairs] (width grid)
+		indexItemPairs = zip [0..] $ array grid
+	in Grid [if index == newItemIndex then newItem else item | (index, item) <- indexItemPairs] $ width grid
 
 changeItemsAt :: Grid t -> [t] -> [Point] -> Grid t
-changeItemsAt grid indexes points
-	| length points == 1 = changeItemAt grid (head indexes) (head points)
-	| otherwise = 
-		let gridWithFirstItemChanged = changeItemAt grid (head indexes) (head points)
-		in changeItemsAt gridWithFirstItemChanged (tail indexes) (tail points)
+changeItemsAt grid (index:indexes) (point:points)
+	| length points == 1 = gridWithFirstItemChanged
+	| otherwise = changeItemsAt gridWithFirstItemChanged indexes points
+	where
+		gridWithFirstItemChanged = changeItemAt grid index point
 
 changeGridAt :: Grid t -> Grid t -> Point -> Grid t
 changeGridAt oldGrid newGrid point
-	| (length $ array oldGrid) == 1 = changeItemAt oldGrid (head $ array oldGrid) point
-	| otherwise = 
-		let 
-		itemList = (array oldGrid)
-		pointList = ([(itemPoint newGrid index) | index <- take (length $ array newGrid) [0..]])
-		in changeItemsAt oldGrid itemList pointList
+	| length itemList == 1 = changeItemAt oldGrid (head itemList) point
+	| otherwise = changeItemsAt oldGrid itemList pointList
+	where
+		itemList = array oldGrid
+		pointList = [itemPoint newGrid index | index <- take (length $ array newGrid) [0..]]
 
 flipAboutVertical :: Grid t -> Grid t
 flipAboutVertical grid = let
-	newArray = [itemAt grid $ Point ((width grid) - x - 1) y | Point x y <- range origin (maxPoint grid)]
+	newArray = [itemAt grid $ Point ((width grid) - x - 1) y | Point x y <- range origin $ maxPoint grid]
 	newWidth = width grid
 	newGrid = Grid newArray newWidth
 	in newGrid
 
 transpose :: Grid t -> Grid t
 transpose grid = let
-	newArray = [itemAt grid point | point <- transposeRange origin (maxPoint grid)]
+	newArray = [itemAt grid point | point <- transposeRange origin $ maxPoint grid]
 	newWidth = height grid
 	newGrid = Grid newArray newWidth
 	in newGrid
