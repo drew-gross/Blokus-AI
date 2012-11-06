@@ -2,6 +2,7 @@ module Board(
 	Board(Board, grid, startPoints),
 	displayForPlayer,
 	displayToUserForPlayer,
+	addPiece,
 	isMoveValid,
 	empty2PlayerBoard
 ) where
@@ -31,6 +32,9 @@ empty2PlayerBoard = Board (Grid (take (defaultSize * defaultSize) $ repeat Empty
 
 colorAt :: Board -> Point -> Color
 colorAt (Board grid _) point = itemAt grid point
+
+changeColorAt :: Board -> Color -> Point -> Board
+changeColorAt (Board grid startPoints) color point = Board (changeItemAt grid color point) startPoints
 
 cornersOfPoint :: Board -> Point -> [Color]
 cornersOfPoint (Board grid _) point
@@ -75,6 +79,17 @@ isMoveValid board move
 		pointsInPiece = filledPoints $ piece move
 		pointsOnBoard = map (plus $ position move) pointsInPiece
 
+prevPoint :: Piece -> Point -> Point
+prevPoint (Piece grid _) (Point 0 y) = Point (width grid - 1) (y - 1)
+prevPoint _ point = Point (x point - 1) (y point)
+
+addPiece :: Board -> Move -> Board
+addPiece board (Move piece position) = foldl (changeColorAt' $ Piece.color piece) board pointsOnBoard
+	where
+		pointsOnBoard = map (plus position) $ filledPoints piece
+		changeColorAt' :: Color -> Board -> Point -> Board
+		changeColorAt' color board = changeColorAt board color
+
 isMoveInBounds :: Board -> Move -> Bool
 isMoveInBounds board (Move piece position)
 	| not $ isPointInBounds board position = False
@@ -101,7 +116,7 @@ displayChar board color point
 displayForPlayer :: Board -> Player -> String
 displayForPlayer board player = let
 	chars = map (displayChar board (Player.color player)) (range origin (maxPoint $ Board.grid board))
-	splitChars = splitEvery (width $ Board.grid board) chars 
+	splitChars = chunksOf (width $ Board.grid board) chars 
 	in unlines splitChars
 
 displayToUserForPlayer :: Board -> Player -> String

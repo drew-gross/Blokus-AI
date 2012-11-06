@@ -9,21 +9,6 @@ import Board
 import Piece
 import Move
 
-prevPoint :: Piece -> Point -> Point
-prevPoint (Piece grid _) (Point 0 y) = Point (width grid - 1) (y - 1)
-prevPoint _ point = Point (x point - 1) (y point)
-
-addPieceToBoardHelper :: Board -> Move -> Point -> Board
-addPieceToBoardHelper board move (Point 0 0) = Board (changeItemAt (Board.grid board) (itemAt (Piece.grid $ piece move) origin) (position move)) (startPoints board)
-addPieceToBoardHelper board move pieceLocation = 
-	let	nextPieceLocation = prevPoint (piece move) pieceLocation
-		color = itemAt (Piece.grid (piece move)) pieceLocation
-		updatedGrid = changeItemAt (Board.grid board) color $ (position move) `plus` pieceLocation
-	in addPieceToBoardHelper (Board updatedGrid (startPoints board)) move nextPieceLocation
-
-addPieceToBoard :: Board -> Move -> Board
-addPieceToBoard board move = addPieceToBoardHelper board move (maxPoint $ Piece.grid $ piece move)
-
 allInvalidMovesForPieceRotation :: Board -> Piece -> [Move]
 allInvalidMovesForPieceRotation board piece = let
 		maxPlacementPoint = ((maxPoint $ Board.grid board) `minus` (maxPoint $ Piece.grid piece))
@@ -53,7 +38,7 @@ getMove board player = do
 	putStr $ displayToUserForPlayer board player
 	index0point <- getPoint
 	return (moveFromUserInput player pieceIndexStr rotationNumberStr index0point, 
-		addPieceToBoard board (moveFromUserInput player pieceIndexStr rotationNumberStr index0point), 
+		addPiece board (moveFromUserInput player pieceIndexStr rotationNumberStr index0point), 
 		removePiece player $ (pieces player !! read1IndexdIndex pieceIndexStr))
 
 completeUserTurn :: (Board, Player) -> IO (Board, Player)
@@ -72,7 +57,7 @@ completeUserTurn (board, player) = do
 completeAiTurn :: (Board, Player) -> (Board, Player)
 completeAiTurn (board, player) = let
 	move = head $ allValidMovesForPlayer board player
-	updatedBoard = addPieceToBoard board move
+	updatedBoard = addPiece board move
 	updatedPlayer = removePiece player (piece move)
 	in (updatedBoard, updatedPlayer)
 
