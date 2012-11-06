@@ -24,25 +24,6 @@ addPieceToBoardHelper board move pieceLocation =
 addPieceToBoard :: Board -> Move -> Board
 addPieceToBoard board move = addPieceToBoardHelper board move (maxPoint $ Piece.grid $ piece move)
 
-isMoveInBounds :: Board -> Move -> Bool
-isMoveInBounds board (Move piece position)
-	| x position < 0 = False
-	| y position < 0 = False
-	| x (position `plus` maxPoint (Piece.grid piece)) >= width (Board.grid board) = False
-	| y (position `plus` maxPoint (Piece.grid piece)) >= height (Board.grid board) = False
-	| otherwise = True
-
-isMoveValid :: Board -> Move -> Bool
-isMoveValid board move
-	| not $ isMoveInBounds board move = False
-	| not $ and $ map (isPointAdjacentToColor board color) pointsOnBoard = False
-	| any (isPointOpenToColor board color) pointsOnBoard = True
-	| otherwise = False
-	where
-		color = Piece.color $ piece move
-		pointsInPiece = filledPoints $ piece move
-		pointsOnBoard = map (plus $ position move) pointsInPiece
-
 allInvalidMovesForPieceRotation :: Board -> Piece -> [Move]
 allInvalidMovesForPieceRotation board piece = let
 		maxPlacementPoint = ((maxPoint $ Board.grid board) `minus` (maxPoint $ Piece.grid piece))

@@ -4,7 +4,7 @@ module Board(
 	printBoard,
 	displayToUserForPlayer,
 	isPointAdjacentToColor,
-	isPointOpenToColor,
+	isMoveValid,
 	empty2PlayerBoard
 ) where
 
@@ -17,11 +17,13 @@ import Point
 import Player
 import Display
 import Utilities
+import Move
+import Piece
 
 data Board = Board {grid :: Grid Color, startPoints :: [Point]}
 
 instance Display Board where
-	display = display . grid
+	display = display . Board.grid
 
 defaultSize = 14
 defaultStartPoints = [Point 4 4, Point 9 9]
@@ -58,6 +60,25 @@ isPointOpenToColor board color point
 				  isPointAdjacentToColor board color point && 
 				  (colorAt board point) == Empty
 
+isMoveValid :: Board -> Move -> Bool
+isMoveValid board move
+	| not $ isMoveInBounds board move = False
+	| not $ and $ map (isPointAdjacentToColor board color) pointsOnBoard = False
+	| any (isPointOpenToColor board color) pointsOnBoard = True
+	| otherwise = False
+	where
+		color = Piece.color $ piece move
+		pointsInPiece = filledPoints $ piece move
+		pointsOnBoard = map (plus $ position move) pointsInPiece
+
+isMoveInBounds :: Board -> Move -> Bool
+isMoveInBounds board (Move piece position)
+	| x position < 0 = False
+	| y position < 0 = False
+	| x (position `plus` maxPoint (Piece.grid piece)) >= width (Board.grid board) = False
+	| y (position `plus` maxPoint (Piece.grid piece)) >= height (Board.grid board) = False
+	| otherwise = True
+
 displayChar :: Board -> Color -> Point -> Char
 displayChar board color point
 	| colorAt board point == Red =     'R'
@@ -69,8 +90,8 @@ displayChar board color point
 
 displayForPlayer :: Board -> Player -> String
 displayForPlayer board player = let
-	chars = map (displayChar board (color player)) (range origin (maxPoint $ grid board))
-	splitChars = splitEvery (width $ grid board) chars 
+	chars = map (displayChar board (Player.color player)) (range origin (maxPoint $ Board.grid board))
+	splitChars = splitEvery (width $ Board.grid board) chars 
 	in unlines splitChars
 
 printBoard board = putStr . (displayForPlayer board)
