@@ -1,7 +1,6 @@
 module Board(
 	Board(Board, grid, startPoints),
 	displayForPlayer,
-	printBoard,
 	displayToUserForPlayer,
 	isMoveValid,
 	empty2PlayerBoard
@@ -104,8 +103,6 @@ displayForPlayer board player = let
 	chars = map (displayChar board (Player.color player)) (range origin (maxPoint $ Board.grid board))
 	splitChars = splitEvery (width $ Board.grid board) chars 
 	in unlines splitChars
-
-printBoard board = putStr . (displayForPlayer board)
 
 displayToUserForPlayer :: Board -> Player -> String
 displayToUserForPlayer board player = " 12345678901234\n" ++ unlines (map concatTuple (zip (map show repeatedSingleDigits) (lines $ displayForPlayer board player)))
