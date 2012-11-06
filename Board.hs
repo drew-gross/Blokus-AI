@@ -35,10 +35,10 @@ colorAt (Board grid _) point = itemAt grid point
 cornersOfPoint :: Board -> Point -> [Color]
 cornersOfPoint (Board grid _) point
 	| not $ containsPoint grid point = error "index out of range"
-	| otherwise = 	(safeItemAt grid (ulPoint point)) ++ 
-					(safeItemAt grid (urPoint point)) ++ 
-					(safeItemAt grid (drPoint point)) ++ 
-					(safeItemAt grid (dlPoint point))
+	| otherwise = 	(safeItemAt grid $ ulPoint point) ++ 
+					(safeItemAt grid $ urPoint point) ++ 
+					(safeItemAt grid $ drPoint point) ++ 
+					(safeItemAt grid $ dlPoint point)
 
 sidesOfPoint :: Board -> Point -> [Color]
 sidesOfPoint (Board grid _) point
