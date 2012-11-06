@@ -3,7 +3,6 @@ module Board(
 	displayForPlayer,
 	printBoard,
 	displayToUserForPlayer,
-	isPointAdjacentToColor,
 	isMoveValid,
 	empty2PlayerBoard
 ) where
@@ -51,20 +50,26 @@ sidesOfPoint (Board grid _) point
 					(safeItemAt grid $ downPoint point)
 
 isPointAdjacentToColor :: Board -> Color -> Point -> Bool
-isPointAdjacentToColor board color point = not $ color `elem` sidesOfPoint board point
+isPointAdjacentToColor board color point = color `elem` sidesOfPoint board point
 
-isPointOpenToColor :: Board -> Color -> Point -> Bool
-isPointOpenToColor board color point 
-	| point `elem` startPoints board && colorAt board point == Empty = True
-	| otherwise = (color `elem` (cornersOfPoint board point)) && 
-				  isPointAdjacentToColor board color point && 
-				  (colorAt board point) == Empty
+isPointCornerToColor :: Board -> Color -> Point -> Bool
+isPointCornerToColor board color point = color `elem` cornersOfPoint board point
+
+isPointLaunchPointForColor :: Board -> Color -> Point -> Bool
+isPointLaunchPointForColor board color point 
+	| not $ isPointInBounds board point = False
+	| colorAt board point /= Empty = False
+	| isPointAdjacentToColor board color point = False
+	| isPointCornerToColor board color point = True
+	| point `elem` startPoints board = True
+	| otherwise = False
 
 isMoveValid :: Board -> Move -> Bool
 isMoveValid board move
-	| not $ isMoveInBounds board move = False
-	| not $ and $ map (isPointAdjacentToColor board color) pointsOnBoard = False
-	| any (isPointOpenToColor board color) pointsOnBoard = True
+	| not $ isMoveInBounds board move = False --move is outside of board
+	| any (\point -> colorAt board point /= Empty) pointsOnBoard = False --move is overlapping another piece
+	| any (isPointAdjacentToColor board color) pointsOnBoard = False --side of piece is touching its own color
+	| any (isPointLaunchPointForColor board color) pointsOnBoard = True
 	| otherwise = False
 	where
 		color = Piece.color $ piece move
@@ -73,10 +78,16 @@ isMoveValid board move
 
 isMoveInBounds :: Board -> Move -> Bool
 isMoveInBounds board (Move piece position)
-	| x position < 0 = False
-	| y position < 0 = False
-	| x (position `plus` maxPoint (Piece.grid piece)) >= width (Board.grid board) = False
-	| y (position `plus` maxPoint (Piece.grid piece)) >= height (Board.grid board) = False
+	| not $ isPointInBounds board position = False
+	| not $ isPointInBounds board $ position `plus` (maxPoint $ Piece.grid piece) = False
+	| otherwise = True
+
+isPointInBounds :: Board -> Point -> Bool
+isPointInBounds (Board grid _) (Point x y)
+	| x < 0 = False
+	| y < 0 = False
+	| x >= width grid = False
+	| y >= height grid = False
 	| otherwise = True
 
 displayChar :: Board -> Color -> Point -> Char
@@ -85,7 +96,7 @@ displayChar board color point
 	| colorAt board point == Green =   'G'
 	| colorAt board point == Blue =    'B'
 	| colorAt board point == Yellow =  'Y'
-	| isPointOpenToColor board color point = 'O'
+	| isPointLaunchPointForColor board color point = 'O'
 	| otherwise = '.'
 
 displayForPlayer :: Board -> Player -> String
