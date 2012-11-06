@@ -87,7 +87,7 @@ completeUserTurn (board, player) = do
 	else do
 		putStr "Invalid Move!\n"
 		completeUserTurn (board, player)
-
+		
 completeAiTurn :: (Board, Player) -> (Board, Player)
 completeAiTurn (board, player) = let
 	move = head $ allValidMovesForPlayer board player
@@ -96,10 +96,10 @@ completeAiTurn (board, player) = let
 	in (updatedBoard, updatedPlayer)
 
 playGame :: (Board, [Player]) -> IO Board
-playGame (board, players) = do
-	(nextBoard, nextPlayer) <- completeUserTurn (board, head players)
+playGame (board, nextHuman:nextAI:otherPlayers) = do
+	(nextBoard, nextPlayer) <- completeUserTurn (board, nextHuman)
 	let
-		(nextBoard2, nextPlayer2) = completeAiTurn (nextBoard, (head $ tail players))
-	playGame (nextBoard2, (tail $ tail players) ++ [nextPlayer] ++ [nextPlayer2])
+		(nextBoard2, nextPlayer2) = completeAiTurn (nextBoard, nextAI)
+	playGame (nextBoard2, (otherPlayers) ++ [nextPlayer] ++ [nextPlayer2])
 
 main = playGame (empty2PlayerBoard, [newPlayer Red, newPlayer Blue])
