@@ -26,12 +26,31 @@ removePiece (Player pieces color) piece = Player (pieces \\ [piece]) color
 
 startingGrids color = 
 			 [
-			 Grid [color, color, color, color, color, Empty] 3,
-			 Grid [color] 1, 
-			 Grid [color, Empty, color, color] 2,
-			 Grid [color, color] 1,
-			 Grid [color, color, color, color] 2,
-			 Grid [color, color, color] 1
+			 Grid [color] 1, --1
+
+			 Grid [color, color] 2, --2
+
+			 Grid [color, color, color] 3, --I3
+			 Grid [color, Empty, color, color] 2, --V3
+
+			 Grid [color, color, color, color] 4, --I4
+			 Grid [color, color, color, Empty, color, Empty] 3, --T4
+			 Grid [color, color, color, Empty, Empty, color] 3, --L4
+			 Grid [color, color, Empty, Empty, color, color] 3, --Z4
+			 Grid [color, color, color, color] 2, --O
+
+			 Grid [color, color, color, color, color] 5, --I5
+			 Grid [color, color, color, color, color, Empty, Empty, Empty] 4, --L5
+			 Grid [color, color, color, color, Empty, color, Empty, Empty] 4, --Y
+			 Grid [Empty, color, color, color, color, color, Empty, Empty] 4, --N
+			 Grid [color, color, color, color, color, Empty] 3, --P
+			 Grid [color, color, color, color, Empty, color] 3, --U
+			 Grid [Empty, color, Empty, color, color, color, Empty, color, Empty] 3, --X
+			 Grid [color, color, color, color, Empty, Empty, color, Empty, Empty] 3, --V5
+			 Grid [color, color, color, Empty, color, Empty, Empty, color, Empty] 3, --T5
+			 Grid [color, Empty, Empty, color, color, color, Empty, Empty, color] 3, --Z5
+			 Grid [color, Empty, Empty, color, color, Empty, Empty, color, color] 3, --W
+			 Grid [Empty, color, color, color, color, Empty, Empty, color, Empty] 3 --F
 			 ]
 	
 startingPieces color = 
