@@ -29,6 +29,9 @@ defaultStartPoints = [Point 4 4, Point 9 9]
 empty2PlayerBoard :: Board
 empty2PlayerBoard = Board (Grid (take (defaultSize * defaultSize) $ repeat Empty) defaultSize) defaultStartPoints
 
+colorAt :: Board -> Point -> Color
+colorAt (Board grid _) point = itemAt grid point
+
 cornersOfPoint :: Board -> Point -> [Color]
 cornersOfPoint (Board grid _) point
 	| not $ containsPoint grid point = error "index out of range"
@@ -50,17 +53,17 @@ isPointAdjacentToColor board color point = not $ color `elem` sidesOfPoint board
 
 isPointOpenToColor :: Board -> Color -> Point -> Bool
 isPointOpenToColor board color point 
-	| point `elem` startPoints board && itemAt (grid board) point == Empty = True
+	| point `elem` startPoints board && colorAt board point == Empty = True
 	| otherwise = (color `elem` (cornersOfPoint board point)) && 
 				  isPointAdjacentToColor board color point && 
-				  ((itemAt (grid board) point) == Empty)
+				  (colorAt board point) == Empty
 
 displayChar :: Board -> Color -> Point -> Char
 displayChar board color point
-	| itemAt (grid board) point == Red =     'R'
-	| itemAt (grid board) point == Green =   'G'
-	| itemAt (grid board) point == Blue =    'B'
-	| itemAt (grid board) point == Yellow =  'Y'
+	| colorAt board point == Red =     'R'
+	| colorAt board point == Green =   'G'
+	| colorAt board point == Blue =    'B'
+	| colorAt board point == Yellow =  'Y'
 	| isPointOpenToColor board color point = 'O'
 	| otherwise = '.'
 
