@@ -32,7 +32,7 @@ height :: Grid t -> Int
 height (Grid array width) = (length array) `div` width
 
 rows :: Grid t -> [[t]]
-rows (Grid array width) = chunksOf width array
+rows (Grid array width) = splitEvery width array
 
 maxPoint :: Grid t -> Point
 maxPoint grid = Point ((width grid) - 1) ((height grid) - 1)

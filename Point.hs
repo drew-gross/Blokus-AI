@@ -26,7 +26,6 @@ module Point
 ) where
 
 import Utilities
-import Control.Applicative
 
 data Point = Point {x :: Int, y :: Int} deriving (Show, Eq)
 
@@ -65,4 +64,7 @@ transposeRange :: Point -> Point -> [Point]
 transposeRange (Point startX startY) (Point endX endY) = [Point x y | x <- [startX..endX], y <- [startY..endY]]
 
 getPoint :: IO Point
-getPoint = Point <$> (fmap read $ prompt "Enter x: ") <*> (fmap read $ prompt "Enter y: ")
+getPoint = do
+	xStr <- prompt "Enter x: "
+	yStr <- prompt "Enter y: "
+	return $ Point (read xStr) (read yStr)
