@@ -26,9 +26,7 @@ allValidMovesForPlayer board player = concatMap (allValidMovesForPiece board) (p
 read1IndexdIndex = (flip (-) 1) . read
 read1IndexdPoint = (flip minus $ Point 1 1)
 getPieceFromIndex (Player pieces _) index = pieces !! index
-moveFromUserInput player pieceIndex rotation point = Move (rotations piece !! rotation) point
-	where
-		piece = pieces player !! pieceIndex
+moveFromUserInput (Player pieces _) pieceIndex rotation point = Move (rotations (pieces !! pieceIndex) !! rotation) point
 
 getMove :: Board -> Player -> IO (Move, Board, Player)
 getMove board player = do
