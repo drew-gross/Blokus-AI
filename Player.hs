@@ -19,7 +19,7 @@ instance Display Player where
 		pieceAnnotations = ["Piece " ++ show num ++ ":\n" | num <- [1..]]
 		pieceStrings = map display $ pieces player
 		pairs = zip pieceAnnotations pieceStrings
-		in concat $ map (\(first, second) -> first ++ second) pairs
+		in concat $ map concatTuple pairs
 
 removePiece :: Player -> Piece -> Player
 removePiece (Player pieces color) piece = Player (pieces \\ [piece]) color
