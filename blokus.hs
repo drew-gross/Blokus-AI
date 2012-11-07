@@ -1,4 +1,5 @@
 import Debug.Trace
+import Control.Applicative
 
 import Color
 import Point
@@ -32,9 +33,10 @@ getMove board player = do
 	unrotatedPiece <- return $ pieces player !! pieceIndex
 	rotationNumber <- fmap read1IndexdIndex $ prompt $ (displayNumberedList $ rotations unrotatedPiece) ++ "\n" ++ "Enter rotation number:"
 	putStr $ displayToUserForPlayer board player
-	point <- fmap read1IndexdPoint getPoint
-	piece <- return $ rotations unrotatedPiece !! rotationNumber
-	move <- return $ Move piece point
+	let
+		piece = rotations unrotatedPiece !! rotationNumber
+	do
+	move <- Move <$> (return piece) <*> (fmap read1IndexdPoint getPoint)
 	return (move, addPiece board move, removePiece player piece)
 
 completeUserTurn :: (Board, Player) -> IO (Board, Player)
