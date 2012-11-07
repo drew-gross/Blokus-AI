@@ -25,9 +25,8 @@ allValidMovesForPlayer board player = concatMap (allValidMovesForPiece board) (p
 
 read1IndexdIndex = (flip (-) 1) . read
 getPieceFromIndex (Player pieces _) string = pieces !! string
-moveFromUserInput player pieceIndex rotation index0point = Move (rotations piece !! rotation) point
+moveFromUserInput player pieceIndex rotation point = Move (rotations piece !! rotation) point
 	where
-		point = index0point `minus` (Point 1 1)
 		piece = getPieceFromIndex player pieceIndex
 
 getMove :: Board -> Player -> IO (Move, Board, Player)
@@ -35,9 +34,9 @@ getMove board player = do
 	pieceIndex <- fmap read1IndexdIndex $ prompt $ displayToUserForPlayer board player ++ "\n" ++ (display player) ++ "\n" ++ "Enter piece number: "
 	rotationNumber <- fmap read1IndexdIndex $ prompt $ "Enter rotation number:\n" ++ (displayNumberedList $ rotations $ getPieceFromIndex player pieceIndex)
 	putStr $ displayToUserForPlayer board player
-	index0point <- getPoint
-	return (moveFromUserInput player pieceIndex rotationNumber index0point, 
-		addPiece board (moveFromUserInput player pieceIndex rotationNumber index0point), 
+	point <- fmap (flip minus $ Point 1 1) getPoint
+	return (moveFromUserInput player pieceIndex rotationNumber point, 
+		addPiece board (moveFromUserInput player pieceIndex rotationNumber point), 
 		removePiece player $ (pieces player !! pieceIndex))
 
 completeUserTurn :: (Board, Player) -> IO (Board, Player)
