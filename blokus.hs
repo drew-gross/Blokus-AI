@@ -24,22 +24,21 @@ allValidMovesForPlayer :: Board -> Player -> [Move]
 allValidMovesForPlayer board player = concatMap (allValidMovesForPiece board) (pieces player)
 
 read1IndexdIndex = (flip (-) 1) . read
-getPieceFromUserString player string = (pieces player) !! read1IndexdIndex string
-moveFromUserInput player pieceIndexStr rotationNumberStr index0point = Move (rotations piece !! rotation) point
+getPieceFromIndex (Player pieces _) string = pieces !! string
+moveFromUserInput player pieceIndex rotation index0point = Move (rotations piece !! rotation) point
 	where
 		point = index0point `minus` (Point 1 1)
-		piece = getPieceFromUserString player pieceIndexStr
-		rotation = read1IndexdIndex rotationNumberStr
+		piece = getPieceFromIndex player pieceIndex
 
 getMove :: Board -> Player -> IO (Move, Board, Player)
 getMove board player = do
-	pieceIndexStr     <- prompt $ displayToUserForPlayer board player ++ "\n" ++ (display player) ++ "\n" ++ "Enter piece number: "
-	rotationNumberStr <- prompt $ "Enter rotation number:\n" ++ (displayNumberedList $ rotations $ getPieceFromUserString player pieceIndexStr)
+	pieceIndex <- fmap read1IndexdIndex $ prompt $ displayToUserForPlayer board player ++ "\n" ++ (display player) ++ "\n" ++ "Enter piece number: "
+	rotationNumber <- fmap read1IndexdIndex $ prompt $ "Enter rotation number:\n" ++ (displayNumberedList $ rotations $ getPieceFromIndex player pieceIndex)
 	putStr $ displayToUserForPlayer board player
 	index0point <- getPoint
-	return (moveFromUserInput player pieceIndexStr rotationNumberStr index0point, 
-		addPiece board (moveFromUserInput player pieceIndexStr rotationNumberStr index0point), 
-		removePiece player $ (pieces player !! read1IndexdIndex pieceIndexStr))
+	return (moveFromUserInput player pieceIndex rotationNumber index0point, 
+		addPiece board (moveFromUserInput player pieceIndex rotationNumber index0point), 
+		removePiece player $ (pieces player !! pieceIndex))
 
 completeUserTurn :: (Board, Player) -> IO (Board, Player)
 completeUserTurn (board, player) = do
