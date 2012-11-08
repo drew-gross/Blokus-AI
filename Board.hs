@@ -101,6 +101,9 @@ isPointInBounds (Board grid _) (Point x y)
 
 displayChar :: Board -> Color -> Point -> Char
 displayChar board color point
-	| colorAt board point /= Empty = head $ display color
+	| colorAt board point == Red =     'R'
+	| colorAt board point == Green =   'G'
+	| colorAt board point == Blue =    'B'
+	| colorAt board point == Yellow =  'Y'
 	| isPointLaunchPointForColor board color point = 'O'
 	| otherwise = '.'
