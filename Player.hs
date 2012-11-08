@@ -100,7 +100,7 @@ displayForPlayer board player = let
 	in unlines splitChars
 
 displayToUserForPlayer :: Board -> Player -> String
-displayToUserForPlayer board player = " 12345678901234\n" ++ unlines (map concatTuple (zip (map show repeatedSingleDigits) (lines $ displayForPlayer board player)))
+displayToUserForPlayer board player = (++) " 12345678901234\n" $ unlines $ map concatTuple $ zip (map show repeatedSingleDigits) (lines $ displayForPlayer board player)
 
 completeUserTurn :: Player -> Board -> IO (Board, Player)
 completeUserTurn player board = do
