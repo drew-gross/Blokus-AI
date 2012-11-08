@@ -1,5 +1,6 @@
 module Player(
-	Player(Player, color, pieces, doTurn),
+	Player(Player, color, pieces),
+	doTurn,
 	removePiece,
 	newHuman,
 	newComputer
@@ -19,7 +20,7 @@ import Board
 import Move
 import Point
 
-data Player = Player {pieces :: [Piece], color :: Color, doTurn :: (Board, Player) -> IO (Board, Player)}
+data Player = Player {pieces :: [Piece], color :: Color, completeMove :: Player -> Board -> IO (Board, Player)}
 
 instance Display Player where
 	display player = let
@@ -101,25 +102,28 @@ displayForPlayer board player = let
 displayToUserForPlayer :: Board -> Player -> String
 displayToUserForPlayer board player = " 12345678901234\n" ++ unlines (map concatTuple (zip (map show repeatedSingleDigits) (lines $ displayForPlayer board player)))
 
-completeUserTurn :: (Board, Player) -> IO (Board, Player)
-completeUserTurn (board, player) = do
+completeUserTurn :: Player -> Board -> IO (Board, Player)
+completeUserTurn player board = do
 	(move, updatedBoard, updatedPlayer) <- getMove board player
 	if isMoveValid board move then do
 		continue <- prompt $ displayToUserForPlayer updatedBoard updatedPlayer ++ "\n" ++ "Is this correct? (y/n): "
 		if continue == "y" then
 			return (updatedBoard, updatedPlayer)
 		else
-			completeUserTurn (board, player)
+			completeUserTurn player board
 	else do
 		putStr "Invalid Move!\n"
-		completeUserTurn (board, player)
+		completeUserTurn player board
 		
-completeAiTurn :: (Board, Player) -> IO (Board, Player)
-completeAiTurn (board, player) = let
+completeAiTurn :: Player -> Board -> IO (Board, Player)
+completeAiTurn player board = let
 	move = head $ allValidMovesForPlayer board player
 	updatedBoard = addPiece board move
 	updatedPlayer = removePiece player (piece move)
 	in return (updatedBoard, updatedPlayer)
+
+doTurn :: Player -> Board -> IO (Board, Player)
+doTurn player board = completeMove player player board
 
 newHuman :: Color -> Player
 newHuman color = Player (startingPieces color) color completeUserTurn
