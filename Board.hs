@@ -1,10 +1,9 @@
 module Board(
 	Board(Board, grid, startPoints),
-	displayForPlayer,
-	displayToUserForPlayer,
 	addPiece,
 	isMoveValid,
-	empty2PlayerBoard
+	empty2PlayerBoard,
+	displayChar
 ) where
 
 import Debug.Trace
@@ -13,7 +12,6 @@ import Data.List.Split
 import Grid
 import Color
 import Point
-import Player
 import Display
 import Utilities
 import Move
@@ -112,12 +110,3 @@ displayChar board color point
 	| colorAt board point == Yellow =  'Y'
 	| isPointLaunchPointForColor board color point = 'O'
 	| otherwise = '.'
-
-displayForPlayer :: Board -> Player -> String
-displayForPlayer board player = let
-	chars = map (displayChar board (Player.color player)) (range origin (maxPoint $ Board.grid board))
-	splitChars = chunksOf (width $ Board.grid board) chars 
-	in unlines splitChars
-
-displayToUserForPlayer :: Board -> Player -> String
-displayToUserForPlayer board player = " 12345678901234\n" ++ unlines (map concatTuple (zip (map show repeatedSingleDigits) (lines $ displayForPlayer board player)))

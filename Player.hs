@@ -1,18 +1,25 @@
 module Player(
-	Player(Player, color, pieces),
+	Player(Player, color, pieces, doTurn),
 	removePiece,
-	newPlayer
+	newHuman,
+	newComputer
 ) where
 
+import Control.Applicative
+
 import Data.List
+import Data.List.Split
 
 import Color
 import Grid
 import Display
 import Piece
 import Utilities
+import Board
+import Move
+import Point
 
-data Player = Player {pieces :: [Piece], color :: Color} deriving (Show)
+data Player = Player {pieces :: [Piece], color :: Color, doTurn :: (Board, Player) -> IO (Board, Player)}
 
 instance Display Player where
 	display player = let
@@ -22,7 +29,7 @@ instance Display Player where
 		in concat $ map concatTuple pairs
 
 removePiece :: Player -> Piece -> Player
-removePiece (Player pieces color) piece = Player (pieces \\ [piece]) color
+removePiece (Player pieces color doTurn) piece = Player (pieces \\ [piece]) color doTurn
 
 startingGrids color = 
 			 [
@@ -58,5 +65,64 @@ startingPieces color =
 	where
 		pairs = zip (startingGrids color) [1..]
 
-newPlayer :: Color -> Player
-newPlayer color = Player (startingPieces color) color
+allInvalidMovesForPieceRotation :: Board -> Piece -> [Move]
+allInvalidMovesForPieceRotation board piece = let
+		maxPlacementPoint = ((maxPoint $ Board.grid board) `minus` (maxPoint $ Piece.grid piece))
+	in map (Move piece) (range origin maxPlacementPoint)
+
+allValidMovesForPieceRotation :: Board -> Piece -> [Move]
+allValidMovesForPieceRotation board piece = filter (isMoveValid board) (allInvalidMovesForPieceRotation board piece)
+
+allValidMovesForPiece :: Board -> Piece -> [Move]
+allValidMovesForPiece board piece = concatMap (allValidMovesForPieceRotation board) (rotations piece)
+
+allValidMovesForPlayer :: Board -> Player -> [Move]
+allValidMovesForPlayer board player = concatMap (allValidMovesForPiece board) (pieces player)
+
+read1IndexdIndex = (flip (-) 1) . read
+read1IndexdPoint = (flip minus $ Point 1 1)
+
+getMove :: Board -> Player -> IO (Move, Board, Player)
+getMove board player = do
+	pieceIndex <- fmap read1IndexdIndex $ prompt $ displayToUserForPlayer board player ++ "\n" ++ (display player) ++ "\n" ++ "Enter piece number: "
+	let unrotatedPiece = pieces player !! pieceIndex
+	rotationNumber <- fmap read1IndexdIndex $ prompt $ (displayNumberedList $ rotations unrotatedPiece) ++ "\n" ++ "Enter rotation number:"
+	putStr $ displayToUserForPlayer board player
+	let	piece = rotations unrotatedPiece !! rotationNumber
+	move <- Move <$> (return piece) <*> (fmap read1IndexdPoint getPoint)
+	return (move, addPiece board move, removePiece player piece)
+
+displayForPlayer :: Board -> Player -> String
+displayForPlayer board player = let
+	chars = map (displayChar board (Player.color player)) (range origin (maxPoint $ Board.grid board))
+	splitChars = chunksOf (width $ Board.grid board) chars 
+	in unlines splitChars
+
+displayToUserForPlayer :: Board -> Player -> String
+displayToUserForPlayer board player = " 12345678901234\n" ++ unlines (map concatTuple (zip (map show repeatedSingleDigits) (lines $ displayForPlayer board player)))
+
+completeUserTurn :: (Board, Player) -> IO (Board, Player)
+completeUserTurn (board, player) = do
+	(move, updatedBoard, updatedPlayer) <- getMove board player
+	if isMoveValid board move then do
+		continue <- prompt $ displayToUserForPlayer updatedBoard updatedPlayer ++ "\n" ++ "Is this correct? (y/n): "
+		if continue == "y" then
+			return (updatedBoard, updatedPlayer)
+		else
+			completeUserTurn (board, player)
+	else do
+		putStr "Invalid Move!\n"
+		completeUserTurn (board, player)
+		
+completeAiTurn :: (Board, Player) -> IO (Board, Player)
+completeAiTurn (board, player) = let
+	move = head $ allValidMovesForPlayer board player
+	updatedBoard = addPiece board move
+	updatedPlayer = removePiece player (piece move)
+	in return (updatedBoard, updatedPlayer)
+
+newHuman :: Color -> Player
+newHuman color = Player (startingPieces color) color completeUserTurn
+
+newComputer :: Color -> Player
+newComputer color = Player (startingPieces color) color completeAiTurn
