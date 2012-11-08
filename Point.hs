@@ -21,8 +21,7 @@ module Point
 	range,
 	transposeRange,
 
-	getPoint,
-	prompt
+	getPoint
 ) where
 
 import Utilities

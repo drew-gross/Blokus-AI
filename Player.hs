@@ -60,10 +60,7 @@ startingGrids color =
 			 Grid [Empty, color, color, color, color, Empty, Empty, color, Empty] 3 --F
 			 ]
 	
-startingPieces color = 
-	[Piece grid identifier | (grid, identifier) <- pairs]
-	where
-		pairs = zip (startingGrids color) [1..]
+startingPieces color = zipWith (Piece) (startingGrids color) $ [1..]
 
 allInvalidMovesForPieceRotation :: Board -> Piece -> [Move]
 allInvalidMovesForPieceRotation board piece = let
@@ -90,7 +87,7 @@ getMove board player = do
 	putStr $ displayToUserForPlayer board player
 	let	piece = rotations unrotatedPiece !! rotationNumber
 	move <- Move <$> (return piece) <*> (fmap read1IndexdPoint getPoint)
-	return (move, addPiece board move, removePiece player piece)
+	return (move, applyMove board move, removePiece player piece)
 
 displayForPlayer :: Board -> Player -> String
 displayForPlayer board player = let
@@ -117,7 +114,7 @@ completeUserTurn player board = do
 completeAiTurn :: Player -> Board -> IO (Board, Player)
 completeAiTurn player board = let
 	move = head $ allValidMovesForPlayer board player
-	updatedBoard = addPiece board move
+	updatedBoard = applyMove board move
 	updatedPlayer = removePiece player (piece move)
 	in return (updatedBoard, updatedPlayer)
 

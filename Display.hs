@@ -3,7 +3,6 @@ module Display(
 	display,
 	printDisplay,
 	displayNumberedList,
-	printDisplayNumberedList
 ) where
 
 class Display a where
@@ -21,6 +20,3 @@ displayNumberedListHelper (x:xs) count = show count ++ "\n" ++ display x ++ disp
 
 displayNumberedList :: Display t => [t] -> String
 displayNumberedList list = displayNumberedListHelper list 1
-
-printDisplayNumberedList :: Display t => [t] -> IO ()
-printDisplayNumberedList = putStrLn . displayNumberedList

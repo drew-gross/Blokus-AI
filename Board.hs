@@ -1,6 +1,6 @@
 module Board(
 	Board(Board, grid, startPoints),
-	addPiece,
+	applyMove,
 	isMoveValid,
 	empty2PlayerBoard,
 	displayChar
@@ -18,9 +18,6 @@ import Move
 import Piece
 
 data Board = Board {grid :: Grid Color, startPoints :: [Point]}
-
-instance Display Board where
-	display = display . Board.grid
 
 defaultSize = 14
 defaultStartPoints = [Point 4 4, Point 9 9]
@@ -81,8 +78,8 @@ prevPoint :: Piece -> Point -> Point
 prevPoint (Piece grid _) (Point 0 y) = Point (width grid - 1) (y - 1)
 prevPoint _ point = Point (x point - 1) (y point)
 
-addPiece :: Board -> Move -> Board
-addPiece board (Move piece position) = foldl (changeColorAt' $ Piece.color piece) board pointsOnBoard
+applyMove :: Board -> Move -> Board
+applyMove board (Move piece position) = foldl (changeColorAt' $ Piece.color piece) board pointsOnBoard
 	where
 		pointsOnBoard = map (plus position) $ filledPoints piece
 		changeColorAt' :: Color -> Board -> Point -> Board

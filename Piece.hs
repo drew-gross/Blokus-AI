@@ -24,10 +24,10 @@ instance Eq Piece where
 color :: Piece -> Color
 color (Piece (Grid array width) _) = head $ filter (/= Empty) array
 
-pieceID = flip Piece
+pieceWithID = flip Piece
 
 rotations :: Piece -> [Piece]
-rotations (Piece grid identifier) = map (pieceID identifier) (nub $ map ($ grid) [id, 
+rotations (Piece grid identifier) = map (pieceWithID identifier) (nub $ map ($ grid) [id, 
 											 			  rotate90,
 											 			  rotate180, 
 											 			  rotate270, 
