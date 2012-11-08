@@ -79,9 +79,22 @@ allValidMovesForPlayer board player = concatMap (allValidMovesForPiece board) (p
 read1IndexdIndex = (flip (-) 1) . read
 read1IndexdPoint = (flip minus $ Point 1 1)
 
+unrotatedPieceFromMaybePiece :: Board -> Player -> Maybe Piece -> IO Piece
+unrotatedPieceFromMaybePiece board player Nothing = do
+	putStr "Thats not a valid choice!\n"
+	getUnrotatedPiece board player
+unrotatedPieceFromMaybePiece board player (Just piece) = return piece
+
+getUnrotatedPiece :: Board -> Player -> IO Piece
+getUnrotatedPiece board player = do
+	maybePiece <- fmap (maybeIndex $ pieces player) $ fmap read1IndexdIndex $ prompt promptString
+	unrotatedPieceFromMaybePiece board player maybePiece
+	where
+		promptString = displayToUserForPlayer board player ++ "\n" ++ (display player) ++ "\n" ++ "Enter piece number: "
+
 getMove :: Board -> Player -> IO (Move, Board, Player)
 getMove board player = do
-	unrotatedPiece <- fmap ((!!) (pieces player)) $ fmap read1IndexdIndex $ prompt $ displayToUserForPlayer board player ++ "\n" ++ (display player) ++ "\n" ++ "Enter piece number: "
+	unrotatedPiece <- getUnrotatedPiece board player
 	rotationNumber <- fmap read1IndexdIndex $ prompt $ (displayNumberedList $ rotations unrotatedPiece) ++ "\n" ++ "Enter rotation number:"
 	putStr $ displayToUserForPlayer board player
 	let	piece = rotations unrotatedPiece !! rotationNumber
