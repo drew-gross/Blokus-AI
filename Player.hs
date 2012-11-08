@@ -90,10 +90,10 @@ getUnrotatedPiece board player = do
 
 getMove :: Board -> Player -> IO (Move, Board, Player)
 getMove board player = do
-	unrotatedPiece <- getUnrotatedPiece board player
-	rotationNumber <- fmap read1IndexdIndex $ prompt $ (displayNumberedList $ rotations unrotatedPiece) ++ "\n" ++ "Enter rotation number:"
+	rotatedPieceList <- fmap rotations $ getUnrotatedPiece board player
+	rotationNumber <- fmap read1IndexdIndex $ prompt $ (displayNumberedList $ rotatedPieceList) ++ "\n" ++ "Enter rotation number:"
 	putStr $ displayToUserForPlayer board player
-	let	piece = (!!) (rotations unrotatedPiece) rotationNumber
+	let	piece = (!!) rotatedPieceList rotationNumber
 	move <- Move <$> (return piece) <*> (fmap read1IndexdPoint getPoint)
 	return (move, applyMove board move, removePiece player piece)
 
