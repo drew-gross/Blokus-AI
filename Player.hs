@@ -81,8 +81,7 @@ read1IndexdPoint = (flip minus $ Point 1 1)
 
 getMove :: Board -> Player -> IO (Move, Board, Player)
 getMove board player = do
-	pieceIndex <- fmap read1IndexdIndex $ prompt $ displayToUserForPlayer board player ++ "\n" ++ (display player) ++ "\n" ++ "Enter piece number: "
-	let unrotatedPiece = pieces player !! pieceIndex
+	unrotatedPiece <- fmap ((!!) (pieces player)) $ fmap read1IndexdIndex $ prompt $ displayToUserForPlayer board player ++ "\n" ++ (display player) ++ "\n" ++ "Enter piece number: "
 	rotationNumber <- fmap read1IndexdIndex $ prompt $ (displayNumberedList $ rotations unrotatedPiece) ++ "\n" ++ "Enter rotation number:"
 	putStr $ displayToUserForPlayer board player
 	let	piece = rotations unrotatedPiece !! rotationNumber
