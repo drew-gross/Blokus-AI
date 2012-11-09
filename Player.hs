@@ -88,12 +88,16 @@ getUnrotatedPiece board player = do
 	where
 		promptString = displayToUserForPlayer board player ++ "\n" ++ (display player) ++ "\n" ++ "Enter piece number: "
 
+getRotatedPiece :: Board -> Player -> IO Piece
+getRotatedPiece board player = do
+	rotatedPieceList <- fmap rotations $ getUnrotatedPiece board player
+	let promptString = (displayNumberedList $ rotatedPieceList) ++ "\n" ++ "Enter rotation number:"
+	maybeRotatedPiece <- fmap (maybeIndex rotatedPieceList) $ fmap read1IndexdIndex $ prompt promptString
+	fromMaybe (getRotatedPiece board player) $ fmap return maybeRotatedPiece
+
 getMove :: Board -> Player -> IO (Move, Board, Player)
 getMove board player = do
-	rotatedPieceList <- fmap rotations $ getUnrotatedPiece board player
-	rotationNumber <- fmap read1IndexdIndex $ prompt $ (displayNumberedList $ rotatedPieceList) ++ "\n" ++ "Enter rotation number:"
-	putStr $ displayToUserForPlayer board player
-	let	piece = (!!) rotatedPieceList rotationNumber
+	piece <- getRotatedPiece board player
 	move <- Move <$> (return piece) <*> (fmap read1IndexdPoint getPoint)
 	return (move, applyMove board move, removePiece player piece)
 
