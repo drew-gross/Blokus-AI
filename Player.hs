@@ -65,9 +65,9 @@ startingGrids color =
 startingPieces color = zipWith (Piece) (startingGrids color) $ [1..]
 
 allInvalidMovesForPieceRotation :: Board -> Piece -> [Move]
-allInvalidMovesForPieceRotation board piece = let
-		maxPlacementPoint = ((maxPoint $ Board.grid board) `minus` (maxPoint $ Piece.grid piece))
-	in map (Move piece) (range origin maxPlacementPoint)
+allInvalidMovesForPieceRotation (Board boardGrid _) (Piece pieceGrid identifier) = let
+		maxPlacementPoint = ((maxPoint boardGrid) `minus` (maxPoint pieceGrid))
+	in map (Move (Piece pieceGrid identifier)) (range origin maxPlacementPoint)
 
 allValidMovesForPieceRotation :: Board -> Piece -> [Move]
 allValidMovesForPieceRotation board piece = filter (isMoveValid board) (allInvalidMovesForPieceRotation board piece)
@@ -76,7 +76,7 @@ allValidMovesForPiece :: Board -> Piece -> [Move]
 allValidMovesForPiece board piece = concatMap (allValidMovesForPieceRotation board) (rotations piece)
 
 allValidMovesForPlayer :: Board -> Player -> [Move]
-allValidMovesForPlayer board player = concatMap (allValidMovesForPiece board) (pieces player)
+allValidMovesForPlayer board (Player pieces _ _) = concatMap (allValidMovesForPiece board) pieces
 
 read1IndexdIndex = (flip (-) 1) . read
 read1IndexdPoint = (flip minus $ Point 1 1)
@@ -102,9 +102,9 @@ getMove board player = do
 	return (move, applyMove board move, removePiece player piece)
 
 displayForPlayer :: Board -> Player -> String
-displayForPlayer board player = let
-	chars = map (displayChar board (Player.color player)) (range origin (maxPoint $ Board.grid board))
-	splitChars = chunksOf (width $ Board.grid board) chars 
+displayForPlayer (Board grid sp) (Player _ color _) = let
+	chars = map (displayChar (Board grid sp) color) (range origin $ maxPoint grid)
+	splitChars = chunksOf (width grid) chars 
 	in unlines splitChars
 
 displayToUserForPlayer :: Board -> Player -> String
