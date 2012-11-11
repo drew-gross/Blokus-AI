@@ -75,8 +75,8 @@ allValidMovesForPieceRotation board piece = filter (isMoveValid board) (allInval
 allValidMovesForPiece :: Board -> Piece -> [Move]
 allValidMovesForPiece board piece = concatMap (allValidMovesForPieceRotation board) (rotations piece)
 
-allValidMovesForPlayer :: Board -> Player -> [Move]
-allValidMovesForPlayer board (Player pieces _ _) = concatMap (allValidMovesForPiece board) pieces
+allValidMovesForPlayer :: Player -> Board -> [Move]
+allValidMovesForPlayer (Player pieces _ _) board = concatMap (allValidMovesForPiece board) pieces
 
 read1IndexdIndex = (flip (-) 1) . read
 read1IndexdPoint = (flip minus $ Point 1 1)
@@ -122,13 +122,16 @@ completeUserTurn player board = do
 	else do
 		putStr "Invalid Move!\n"
 		completeUserTurn player board
+
+aiSelectedMove :: Player -> Board -> Move
+aiSelectedMove player board = head $ allValidMovesForPlayer player board
 		
 completeAiTurn :: Player -> Board -> IO (Board, Player)
-completeAiTurn player board = let
-	move = head $ allValidMovesForPlayer board player
-	updatedBoard = applyMove board move
-	updatedPlayer = removePiece player (piece move)
-	in return (updatedBoard, updatedPlayer)
+completeAiTurn player board = return (updatedBoard, updatedPlayer)
+	where
+		move = aiSelectedMove player board
+		updatedBoard = applyMove board move
+		updatedPlayer = removePiece player (piece move)
 
 doTurn :: Player -> Board -> IO (Board, Player)
 doTurn player board = completeMove player player board

@@ -1,7 +1,8 @@
 module Utilities(
 	repeatedSingleDigits,
 	prompt,
-	maybeIndex
+	maybeIndex,
+	maybeHead
 ) where
 
 import System.IO
@@ -13,6 +14,10 @@ maybeIndex xs index
 	| index < 0 = Nothing
 	| index >= length xs = Nothing
 	| otherwise = Just $ xs !! index
+
+maybeHead :: [a] -> Maybe a
+maybeHead [] = Nothing
+maybeHead xs = Just $ head xs
 
 prompt :: String -> IO String
 prompt text = do
