@@ -5,8 +5,8 @@ module Grid (
 	allPoints,
 
 	height,
+	unsafeItemAt,
 	itemAt,
-	safeItemAt,
 	itemIndex,
 	changeItemAt,
 	changeGridAt,
@@ -19,9 +19,11 @@ module Grid (
 ) where
 	
 import Data.List.Split
+import Data.Maybe
 
 import Point
 import Display
+import Utilities
 
 data Grid t = Grid {array :: [t], width :: Int} deriving (Show, Eq)
 
@@ -49,15 +51,15 @@ itemIndex grid (Point x y) = (y * (width grid)) + x
 itemPoint :: Grid t -> Int -> Point
 itemPoint (Grid array size) index = Point {x = length array `mod` size, y = length array `div` size}
 
-itemAt :: Grid t -> Point -> t
-itemAt grid point
-	| not $ containsPoint grid point = error "index out of range"
-	| otherwise = array grid !! itemIndex grid point
+--For use when you know you aren't going to access out of bounds
+unsafeItemAt :: Grid t -> Point -> t
+unsafeItemAt grid point 
+	| isNothing item = error "unsafeItemAt: accessing item out of grid bounds"
+	| otherwise = fromJust item 
+	where item = itemAt grid point
 
-safeItemAt :: Grid t -> Point -> [t]
-safeItemAt grid point
-	| not $ containsPoint grid point = []
-	| otherwise = [itemAt grid point]
+itemAt :: Grid t -> Point -> Maybe t
+itemAt grid point = maybeIndex (array grid) $ itemIndex grid point
 
 changeItemAt :: Grid t -> t -> Point -> Grid t
 changeItemAt grid newItem point = 
@@ -82,18 +84,16 @@ changeGridAt oldGrid newGrid point
 		pointList = [itemPoint newGrid index | index <- take (length $ array newGrid) [0..]]
 
 flipAboutVertical :: Grid t -> Grid t
-flipAboutVertical grid = let
-	newArray = [itemAt grid $ Point ((width grid) - x - 1) y | Point x y <- range origin $ maxPoint grid]
-	newWidth = width grid
-	newGrid = Grid newArray newWidth
-	in newGrid
+flipAboutVertical grid = Grid newArray newWidth
+	where
+		newArray = [unsafeItemAt grid $ Point ((width grid) - x - 1) y | Point x y <- range origin $ maxPoint grid]
+		newWidth = width grid
 
 transpose :: Grid t -> Grid t
-transpose grid = let
-	newArray = [itemAt grid point | point <- transposeRange origin $ maxPoint grid]
-	newWidth = height grid
-	newGrid = Grid newArray newWidth
-	in newGrid
+transpose grid = Grid newArray newWidth
+	where
+		newArray = [unsafeItemAt grid point | point <- transposeRange origin $ maxPoint grid]
+		newWidth = height grid
 
 rotate90 = flipAboutVertical . transpose
 

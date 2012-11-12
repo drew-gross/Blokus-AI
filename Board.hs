@@ -8,6 +8,7 @@ module Board(
 
 import Debug.Trace
 import Data.List.Split
+import Data.Maybe
 
 import Grid
 import Color
@@ -25,7 +26,9 @@ defaultStartPoints = [Point 4 4, Point 9 9]
 empty2PlayerBoard :: Board
 empty2PlayerBoard = Board (Grid (take (defaultSize * defaultSize) $ repeat Empty) defaultSize) defaultStartPoints
 
-colorAt :: Board -> Point -> Color
+unsafeColorAt board point = fromJust $ colorAt board point
+
+colorAt :: Board -> Point -> Maybe Color
 colorAt (Board grid _) point = itemAt grid point
 
 changeColorAt :: Board -> Color -> Point -> Board
@@ -34,18 +37,18 @@ changeColorAt (Board grid startPoints) color point = Board (changeItemAt grid co
 cornersOfPoint :: Board -> Point -> [Color]
 cornersOfPoint (Board grid _) point
 	| not $ containsPoint grid point = error "index out of range"
-	| otherwise = 	(safeItemAt grid $ ulPoint point) ++ 
-					(safeItemAt grid $ urPoint point) ++ 
-					(safeItemAt grid $ drPoint point) ++ 
-					(safeItemAt grid $ dlPoint point)
+	| otherwise = catMaybes items
+	where
+		points = map ($ point) [ulPoint, urPoint, drPoint, dlPoint]
+		items = map (itemAt grid) points
 
 sidesOfPoint :: Board -> Point -> [Color]
 sidesOfPoint (Board grid _) point
 	| not $ containsPoint grid point = error "index out of range"
-	| otherwise = 	(safeItemAt grid $ leftPoint point) ++ 
-					(safeItemAt grid $ rightPoint point) ++ 
-					(safeItemAt grid $ upPoint point) ++ 
-					(safeItemAt grid $ downPoint point)
+	| otherwise = catMaybes items
+	where
+		points = map ($ point) [leftPoint, rightPoint, upPoint, downPoint]
+		items = map (itemAt grid) points
 
 isPointAdjacentToColor :: Board -> Color -> Point -> Bool
 isPointAdjacentToColor board color point = color `elem` sidesOfPoint board point
@@ -56,16 +59,18 @@ isPointCornerToColor board color point = color `elem` cornersOfPoint board point
 isPointLaunchPointForColor :: Board -> Color -> Point -> Bool
 isPointLaunchPointForColor board color point 
 	| not $ isPointInBounds board point = False
-	| colorAt board point /= Empty = False
+	| isNothing colotAtPoint = False
+	| fromJust colotAtPoint /= Empty = False
 	| isPointAdjacentToColor board color point = False
 	| isPointCornerToColor board color point = True
 	| point `elem` startPoints board = True
 	| otherwise = False
+	where colotAtPoint = colorAt board point
 
 isMoveValid :: Board -> Move -> Bool
 isMoveValid board move
 	| not $ isMoveInBounds board move = False --move is outside of board
-	| any (\point -> colorAt board point /= Empty) pointsOnBoard = False --move is overlapping another piece
+	| any (\point -> unsafeColorAt board point /= Empty) pointsOnBoard = False --move is overlapping another piece
 	| any (isPointAdjacentToColor board color) pointsOnBoard = False --side of piece is touching its own color
 	| any (isPointLaunchPointForColor board color) pointsOnBoard = True
 	| otherwise = False
@@ -101,9 +106,10 @@ isPointInBounds (Board grid _) (Point x y)
 
 displayChar :: Board -> Color -> Point -> Char
 displayChar board color point
-	| colorAt board point == Red =     'R'
-	| colorAt board point == Green =   'G'
-	| colorAt board point == Blue =    'B'
-	| colorAt board point == Yellow =  'Y'
+	| isPointInBounds board point == False = error "displayChar: point out of bounds of board"
+	| unsafeColorAt board point == Red =     'R'
+	| unsafeColorAt board point == Green =   'G'
+	| unsafeColorAt board point == Blue =    'B'
+	| unsafeColorAt board point == Yellow =  'Y'
 	| isPointLaunchPointForColor board color point = 'O'
 	| otherwise = '.'

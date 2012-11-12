@@ -38,7 +38,7 @@ rotations (Piece grid identifier) = map (pieceWithID identifier) (nub $ map ($ g
 											 			  flipAboutVertical . rotate270])	
 
 filledPoints :: Piece -> [Point]
-filledPoints (Piece grid _) = filter (\point -> itemAt grid point /= Empty) (allPoints grid)
+filledPoints (Piece grid _) = filter (\point -> unsafeItemAt grid point /= Empty) (allPoints grid)
 
 filledPointsCount :: Piece -> Int
 filledPointsCount = length . filledPoints
