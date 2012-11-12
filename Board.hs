@@ -2,6 +2,7 @@ module Board(
 	Board(Board, grid, startPoints),
 	applyMove,
 	isMoveValid,
+	validMovesForPiece,
 	empty2PlayerBoard,
 	displayChar
 ) where
@@ -95,6 +96,17 @@ isMoveInBounds board (Move piece position)
 	| not $ isPointInBounds board position = False
 	| not $ isPointInBounds board $ position `plus` (maxPoint $ Piece.grid piece) = False
 	| otherwise = True
+
+candidateMovesForPieceRotation :: Board -> Piece -> [Move]
+candidateMovesForPieceRotation (Board boardGrid _) (Piece pieceGrid identifier) = let
+		maxPlacementPoint = ((maxPoint boardGrid) `minus` (maxPoint pieceGrid))
+	in map (Move (Piece pieceGrid identifier)) (range origin maxPlacementPoint)
+
+validMovesForPieceRotation :: Board -> Piece -> [Move]
+validMovesForPieceRotation board piece = filter (isMoveValid board) (candidateMovesForPieceRotation board piece)
+
+validMovesForPiece :: Board -> Piece -> [Move]
+validMovesForPiece board piece = concatMap (validMovesForPieceRotation board) (rotations piece)
 
 isPointInBounds :: Board -> Point -> Bool
 isPointInBounds (Board grid _) (Point x y)

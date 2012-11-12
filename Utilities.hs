@@ -1,8 +1,10 @@
 module Utilities(
 	repeatedSingleDigits,
-	prompt,
 	maybeIndex,
-	maybeHead
+	maybeHead,
+
+	prompt,
+	read1IndexedIndex,
 ) where
 
 import System.IO
@@ -24,3 +26,6 @@ prompt text = do
 	putStr text
 	hFlush stdout
 	getLine
+
+read1IndexedIndex :: String -> Int
+read1IndexedIndex = (flip (-) 1) . read

@@ -32,6 +32,12 @@ instance Display Player where
 		pieceStrings = map display $ pieces player
 		in concat $ zipWith (++) pieceAnnotations pieceStrings
 
+newHuman :: Color -> Player
+newHuman color = Player (startingPieces color) color completeUserTurn
+
+newComputer :: Color -> Player
+newComputer color = Player (startingPieces color) color completeAiTurn
+
 removePiece :: Player -> Piece -> Player
 removePiece (Player pieces color doTurn) piece = Player (pieces \\ [piece]) color doTurn
 
@@ -66,61 +72,47 @@ startingGrids color =
 	
 startingPieces color = zipWith (Piece) (startingGrids color) $ [1..]
 
-allInvalidMovesForPieceRotation :: Board -> Piece -> [Move]
-allInvalidMovesForPieceRotation (Board boardGrid _) (Piece pieceGrid identifier) = let
-		maxPlacementPoint = ((maxPoint boardGrid) `minus` (maxPoint pieceGrid))
-	in map (Move (Piece pieceGrid identifier)) (range origin maxPlacementPoint)
-
-allValidMovesForPieceRotation :: Board -> Piece -> [Move]
-allValidMovesForPieceRotation board piece = filter (isMoveValid board) (allInvalidMovesForPieceRotation board piece)
-
-allValidMovesForPiece :: Board -> Piece -> [Move]
-allValidMovesForPiece board piece = concatMap (allValidMovesForPieceRotation board) (rotations piece)
-
 allValidMovesForPlayer :: Player -> Board -> [Move]
-allValidMovesForPlayer (Player pieces _ _) board = concatMap (allValidMovesForPiece board) pieces
+allValidMovesForPlayer (Player pieces _ _) board = concatMap (validMovesForPiece board) pieces
 
-read1IndexdIndex = (flip (-) 1) . read
-read1IndexdPoint = (flip minus $ Point 1 1)
-
-getUnrotatedPiece :: Board -> Player -> IO Piece
-getUnrotatedPiece board player = do
-	maybePiece <- fmap (maybeIndex $ pieces player) $ fmap read1IndexdIndex $ prompt promptString
-	fromMaybe (getUnrotatedPiece board player) $ fmap return maybePiece
+getUnrotatedPiece :: Player -> Board -> IO Piece
+getUnrotatedPiece player board = do
+	maybePiece <- fmap (maybeIndex $ pieces player) $ fmap read1IndexedIndex $ prompt promptString
+	fromMaybe (getUnrotatedPiece player board) $ fmap return maybePiece
 	where
-		promptString = displayToUserForPlayer board player ++ "\n" ++ (display player) ++ "\n" ++ "Enter piece number: "
+		promptString = displayToUserForPlayer player board ++ "\n" ++ (display player) ++ "\n" ++ "Enter piece number: "
 
-getRotatedPiece :: Board -> Player -> IO Piece
-getRotatedPiece board player = do
-	rotatedPieceList <- fmap rotations $ getUnrotatedPiece board player
+getRotatedPiece :: Player -> Board -> IO Piece
+getRotatedPiece player board = do
+	rotatedPieceList <- fmap rotations $ getUnrotatedPiece player board
 	let promptString = (displayNumberedList $ rotatedPieceList) ++ "\n" ++ "Enter rotation number:"
-	maybeRotatedPiece <- fmap (maybeIndex rotatedPieceList) $ fmap read1IndexdIndex $ prompt promptString
-	fromMaybe (getRotatedPiece board player) $ fmap return maybeRotatedPiece
+	maybeRotatedPiece <- fmap (maybeIndex rotatedPieceList) $ fmap read1IndexedIndex $ prompt promptString
+	fromMaybe (getRotatedPiece player board) $ fmap return maybeRotatedPiece
 
-getMove :: Board -> Player -> IO (Maybe (Move, Board, Player))
-getMove board player = do
-	piece <- getRotatedPiece board player
-	move <- Move <$> (return piece) <*> (fmap read1IndexdPoint getPoint)
+getMove :: Player -> Board -> IO (Maybe (Move, Board, Player))
+getMove player board = do
+	piece <- getRotatedPiece player board
+	move <- Move <$> (return piece) <*> (fmap read1IndexedPoint getPoint)
 	return $ Just (move, applyMove board move, removePiece player piece)
 
-displayForPlayer :: Board -> Player -> String
-displayForPlayer (Board grid sp) (Player _ color _) = let
+displayForPlayer :: Player -> Board -> String
+displayForPlayer (Player _ color _) (Board grid sp) = let
 	chars = map (displayChar (Board grid sp) color) (range origin $ maxPoint grid)
 	splitChars = chunksOf (width grid) chars 
 	in unlines splitChars
 
-displayToUserForPlayer :: Board -> Player -> String
-displayToUserForPlayer board player = (++) " 12345678901234\n" $ unlines $ zipWith (++) (map show repeatedSingleDigits) (lines $ displayForPlayer board player)
+displayToUserForPlayer :: Player -> Board -> String
+displayToUserForPlayer player board = (++) " 12345678901234\n" $ unlines $ zipWith (++) (map show repeatedSingleDigits) (lines $ displayForPlayer player board)
 
 completeUserTurn :: Player -> Board -> IO (Maybe (Board, Player))
 completeUserTurn player board = do
-	m <- getMove board player
+	m <- getMove player board
 	if isNothing m then
 		return Nothing
 	else do
 		let (move, updatedBoard, updatedPlayer) = fromJust m
 		if isMoveValid board move then do
-			continue <- prompt $ displayToUserForPlayer updatedBoard updatedPlayer ++ "\n" ++ "Is this correct? (y/n): "
+			continue <- prompt $ displayToUserForPlayer updatedPlayer updatedBoard ++ "\n" ++ "Is this correct? (y/n): "
 			if continue == "y" then
 				return $ Just (updatedBoard, updatedPlayer)
 			else
@@ -131,13 +123,9 @@ completeUserTurn player board = do
 
 aiSelectedMove :: Player -> Board -> Maybe Move
 aiSelectedMove player board = maybeHead $ allValidMovesForPlayer player board
-
-completeAiTurnMaybeifier :: Maybe Board -> Maybe Player -> Maybe (Board, Player)
-completeAiTurnMaybeifier (Just board) (Just player) = Just (board, player)
-completeAiTurnMaybeifier _ _ = Nothing
 		
 completeAiTurn :: Player -> Board -> IO (Maybe (Board, Player))
-completeAiTurn player board = return $ completeAiTurnMaybeifier updatedBoard updatedPlayer
+completeAiTurn player board = return $ (,) <$> updatedBoard <*> updatedPlayer
 	where
 		move = aiSelectedMove player board
 		updatedBoard = fmap (applyMove board) move
@@ -145,12 +133,6 @@ completeAiTurn player board = return $ completeAiTurnMaybeifier updatedBoard upd
 
 doTurn :: Player -> Board -> IO (Maybe (Board, Player))
 doTurn player board = completeMove player player board
-
-newHuman :: Color -> Player
-newHuman color = Player (startingPieces color) color completeUserTurn
-
-newComputer :: Color -> Player
-newComputer color = Player (startingPieces color) color completeAiTurn
 
 squaresRemaining :: Player -> Int
 squaresRemaining (Player pieces _ _)= sum $ map filledPointsCount pieces

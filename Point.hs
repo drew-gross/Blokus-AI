@@ -21,7 +21,8 @@ module Point
 	range,
 	transposeRange,
 
-	getPoint
+	getPoint,
+	read1IndexedPoint
 ) where
 
 import Utilities
@@ -62,6 +63,8 @@ range (Point startX startY) (Point endX endY) = [Point x y | y <- [startY..endY]
 
 transposeRange :: Point -> Point -> [Point]
 transposeRange (Point startX startY) (Point endX endY) = [Point x y | x <- [startX..endX], y <- [startY..endY]]
+
+read1IndexedPoint = (flip minus $ Point 1 1)
 
 getPoint :: IO Point
 getPoint = Point <$> (fmap read $ prompt "Enter x: ") <*> (fmap read $ prompt "Enter y: ")
