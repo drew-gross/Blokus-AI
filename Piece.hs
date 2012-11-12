@@ -3,6 +3,7 @@ module Piece(
 	rotations,
 	color,
 	filledPoints,
+	filledPointsCount
 ) where
 
 import Data.List
@@ -38,3 +39,6 @@ rotations (Piece grid identifier) = map (pieceWithID identifier) (nub $ map ($ g
 
 filledPoints :: Piece -> [Point]
 filledPoints (Piece grid _) = filter (\point -> itemAt grid point /= Empty) (allPoints grid)
+
+filledPointsCount :: Piece -> Int
+filledPointsCount = length . filledPoints

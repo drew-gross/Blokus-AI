@@ -3,7 +3,8 @@ module Player(
 	doTurn,
 	removePiece,
 	newHuman,
-	newComputer
+	newComputer,
+	winner
 ) where
 
 import Control.Applicative
@@ -12,6 +13,7 @@ import Data.List
 import Data.List.Split
 
 import Data.Maybe
+import Data.Function
 
 import Color
 import Grid
@@ -22,7 +24,7 @@ import Board
 import Move
 import Point
 
-data Player = Player {pieces :: [Piece], color :: Color, completeMove :: Player -> Board -> IO (Board, Player)}
+data Player = Player {pieces :: [Piece], color :: Color, completeMove :: Player -> Board -> IO (Maybe (Board, Player))}
 
 instance Display Player where
 	display player = let
@@ -95,11 +97,11 @@ getRotatedPiece board player = do
 	maybeRotatedPiece <- fmap (maybeIndex rotatedPieceList) $ fmap read1IndexdIndex $ prompt promptString
 	fromMaybe (getRotatedPiece board player) $ fmap return maybeRotatedPiece
 
-getMove :: Board -> Player -> IO (Move, Board, Player)
+getMove :: Board -> Player -> IO (Maybe (Move, Board, Player))
 getMove board player = do
 	piece <- getRotatedPiece board player
 	move <- Move <$> (return piece) <*> (fmap read1IndexdPoint getPoint)
-	return (move, applyMove board move, removePiece player piece)
+	return $ Just (move, applyMove board move, removePiece player piece)
 
 displayForPlayer :: Board -> Player -> String
 displayForPlayer (Board grid sp) (Player _ color _) = let
@@ -110,30 +112,38 @@ displayForPlayer (Board grid sp) (Player _ color _) = let
 displayToUserForPlayer :: Board -> Player -> String
 displayToUserForPlayer board player = (++) " 12345678901234\n" $ unlines $ zipWith (++) (map show repeatedSingleDigits) (lines $ displayForPlayer board player)
 
-completeUserTurn :: Player -> Board -> IO (Board, Player)
+completeUserTurn :: Player -> Board -> IO (Maybe (Board, Player))
 completeUserTurn player board = do
-	(move, updatedBoard, updatedPlayer) <- getMove board player
-	if isMoveValid board move then do
-		continue <- prompt $ displayToUserForPlayer updatedBoard updatedPlayer ++ "\n" ++ "Is this correct? (y/n): "
-		if continue == "y" then
-			return (updatedBoard, updatedPlayer)
-		else
-			completeUserTurn player board
+	m <- getMove board player
+	if isNothing m then
+		return Nothing
 	else do
-		putStr "Invalid Move!\n"
-		completeUserTurn player board
+		let (move, updatedBoard, updatedPlayer) = fromJust m
+		if isMoveValid board move then do
+			continue <- prompt $ displayToUserForPlayer updatedBoard updatedPlayer ++ "\n" ++ "Is this correct? (y/n): "
+			if continue == "y" then
+				return $ Just (updatedBoard, updatedPlayer)
+			else
+				completeUserTurn player board
+		else do
+			putStr "Invalid Move!\n"
+			completeUserTurn player board
 
-aiSelectedMove :: Player -> Board -> Move
-aiSelectedMove player board = head $ allValidMovesForPlayer player board
+aiSelectedMove :: Player -> Board -> Maybe Move
+aiSelectedMove player board = maybeHead $ allValidMovesForPlayer player board
+
+completeAiTurnMaybeifier :: Maybe Board -> Maybe Player -> Maybe (Board, Player)
+completeAiTurnMaybeifier (Just board) (Just player) = Just (board, player)
+completeAiTurnMaybeifier _ _ = Nothing
 		
-completeAiTurn :: Player -> Board -> IO (Board, Player)
-completeAiTurn player board = return (updatedBoard, updatedPlayer)
+completeAiTurn :: Player -> Board -> IO (Maybe (Board, Player))
+completeAiTurn player board = return $ completeAiTurnMaybeifier updatedBoard updatedPlayer
 	where
 		move = aiSelectedMove player board
-		updatedBoard = applyMove board move
-		updatedPlayer = removePiece player (piece move)
+		updatedBoard = fmap (applyMove board) move
+		updatedPlayer = fmap (removePiece player) $ fmap piece move
 
-doTurn :: Player -> Board -> IO (Board, Player)
+doTurn :: Player -> Board -> IO (Maybe (Board, Player))
 doTurn player board = completeMove player player board
 
 newHuman :: Color -> Player
@@ -141,3 +151,9 @@ newHuman color = Player (startingPieces color) color completeUserTurn
 
 newComputer :: Color -> Player
 newComputer color = Player (startingPieces color) color completeAiTurn
+
+squaresRemaining :: Player -> Int
+squaresRemaining (Player pieces _ _)= sum $ map filledPointsCount pieces
+
+winner :: [Player] -> Player
+winner players = head $ sortBy (compare `on` squaresRemaining) players
