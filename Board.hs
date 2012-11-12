@@ -27,10 +27,10 @@ defaultStartPoints = [Point 4 4, Point 9 9]
 empty2PlayerBoard :: Board
 empty2PlayerBoard = Board (Grid (take (defaultSize * defaultSize) $ repeat Empty) defaultSize) defaultStartPoints
 
-unsafeColorAt board point = fromJust $ colorAt board point
-
-colorAt :: Board -> Point -> Maybe Color
-colorAt (Board grid _) point = itemAt grid point
+colorAt :: Board -> Point -> Color
+colorAt (Board grid _) point
+	| containsPoint grid point == False = error "colorAt: point outside of board"
+	| otherwise = fromJust $ itemAt grid point
 
 changeColorAt :: Board -> Color -> Point -> Board
 changeColorAt (Board grid startPoints) color point = Board (changeItemAt grid color point) startPoints
@@ -60,18 +60,17 @@ isPointCornerToColor board color point = color `elem` cornersOfPoint board point
 isPointLaunchPointForColor :: Board -> Color -> Point -> Bool
 isPointLaunchPointForColor board color point 
 	| not $ isPointInBounds board point = False
-	| isNothing colotAtPoint = False
-	| fromJust colotAtPoint /= Empty = False
+	| colorAtPoint /= Empty = False
 	| isPointAdjacentToColor board color point = False
 	| isPointCornerToColor board color point = True
 	| point `elem` startPoints board = True
 	| otherwise = False
-	where colotAtPoint = colorAt board point
+	where colorAtPoint = colorAt board point
 
 isMoveValid :: Board -> Move -> Bool
 isMoveValid board move
 	| not $ isMoveInBounds board move = False --move is outside of board
-	| any (\point -> unsafeColorAt board point /= Empty) pointsOnBoard = False --move is overlapping another piece
+	| any (\point -> colorAt board point /= Empty) pointsOnBoard = False --move is overlapping another piece
 	| any (isPointAdjacentToColor board color) pointsOnBoard = False --side of piece is touching its own color
 	| any (isPointLaunchPointForColor board color) pointsOnBoard = True
 	| otherwise = False
@@ -119,9 +118,9 @@ isPointInBounds (Board grid _) (Point x y)
 displayChar :: Board -> Color -> Point -> Char
 displayChar board color point
 	| isPointInBounds board point == False = error "displayChar: point out of bounds of board"
-	| unsafeColorAt board point == Red =     'R'
-	| unsafeColorAt board point == Green =   'G'
-	| unsafeColorAt board point == Blue =    'B'
-	| unsafeColorAt board point == Yellow =  'Y'
+	| colorAt board point == Red =     'R'
+	| colorAt board point == Green =   'G'
+	| colorAt board point == Blue =    'B'
+	| colorAt board point == Yellow =  'Y'
 	| isPointLaunchPointForColor board color point = 'O'
 	| otherwise = '.'

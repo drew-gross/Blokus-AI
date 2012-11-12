@@ -59,7 +59,9 @@ unsafeItemAt grid point
 	where item = itemAt grid point
 
 itemAt :: Grid t -> Point -> Maybe t
-itemAt grid point = maybeIndex (array grid) $ itemIndex grid point
+itemAt grid point
+	| not $ containsPoint grid point = Nothing
+	| otherwise = maybeIndex (array grid) $ itemIndex grid point
 
 changeItemAt :: Grid t -> t -> Point -> Grid t
 changeItemAt grid newItem point = 
