@@ -68,16 +68,16 @@ isPointLaunchPointForColor board color point
 	where colorAtPoint = colorAt board point
 
 isMoveValid :: Board -> Move -> Bool
-isMoveValid board move
+isMoveValid board move@(Move piece position)
 	| not $ isMoveInBounds board move = False --move is outside of board
 	| any (\point -> colorAt board point /= Empty) pointsOnBoard = False --move is overlapping another piece
 	| any (isPointAdjacentToColor board color) pointsOnBoard = False --side of piece is touching its own color
 	| any (isPointLaunchPointForColor board color) pointsOnBoard = True
 	| otherwise = False
 	where
-		color = Piece.color $ piece move
-		pointsInPiece = filledPoints $ piece move
-		pointsOnBoard = map (plus $ position move) pointsInPiece
+		color = Piece.color piece
+		pointsInPiece = filledPoints piece
+		pointsOnBoard = map (plus position) pointsInPiece
 
 prevPoint :: Piece -> Point -> Point
 prevPoint (Piece grid _) (Point 0 y) = Point (width grid - 1) (y - 1)
@@ -91,15 +91,15 @@ applyMove board (Move piece position) = foldl (changeColorAt' $ Piece.color piec
 		changeColorAt' color board = changeColorAt board color
 
 isMoveInBounds :: Board -> Move -> Bool
-isMoveInBounds board (Move piece position)
+isMoveInBounds board (Move (Piece grid _) position)
 	| not $ isPointInBounds board position = False
-	| not $ isPointInBounds board $ position `plus` (maxPoint $ Piece.grid piece) = False
+	| not $ isPointInBounds board $ position `plus` (maxPoint grid) = False
 	| otherwise = True
 
 candidateMovesForPieceRotation :: Board -> Piece -> [Move]
-candidateMovesForPieceRotation (Board boardGrid _) (Piece pieceGrid identifier) = let
+candidateMovesForPieceRotation (Board boardGrid _) piece@(Piece pieceGrid identifier) = let
 		maxPlacementPoint = ((maxPoint boardGrid) `minus` (maxPoint pieceGrid))
-	in map (Move (Piece pieceGrid identifier)) (range origin maxPlacementPoint)
+	in map (Move piece) $ range origin maxPlacementPoint
 
 validMovesForPieceRotation :: Board -> Piece -> [Move]
 validMovesForPieceRotation board piece = filter (isMoveValid board) (candidateMovesForPieceRotation board piece)

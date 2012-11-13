@@ -59,15 +59,15 @@ unsafeItemAt grid point
 	where item = itemAt grid point
 
 itemAt :: Grid t -> Point -> Maybe t
-itemAt grid point
+itemAt grid@(Grid array _) point
 	| not $ containsPoint grid point = Nothing
-	| otherwise = maybeIndex (array grid) $ itemIndex grid point
+	| otherwise = maybeIndex array $ itemIndex grid point
 
 changeItemAt :: Grid t -> t -> Point -> Grid t
-changeItemAt grid newItem point = 
+changeItemAt grid@(Grid array _) newItem point = 
 	let
 		newItemIndex = itemIndex grid point
-		indexItemPairs = zip [0..] $ array grid
+		indexItemPairs = zip [0..] array
 	in Grid [if index == newItemIndex then newItem else item | (index, item) <- indexItemPairs] $ width grid
 
 changeItemsAt :: Grid t -> [t] -> [Point] -> Grid t
@@ -78,18 +78,16 @@ changeItemsAt grid (index:indexes) (point:points)
 		gridWithFirstItemChanged = changeItemAt grid index point
 
 changeGridAt :: Grid t -> Grid t -> Point -> Grid t
-changeGridAt oldGrid newGrid point
-	| length itemList == 1 = changeItemAt oldGrid (head itemList) point
-	| otherwise = changeItemsAt oldGrid itemList pointList
+changeGridAt oldGrid@(Grid oldArray@(oldHead:oldTail) _) newGrid@(Grid newArray _) point
+	| length oldArray == 1 = changeItemAt oldGrid oldHead point
+	| otherwise = changeItemsAt oldGrid oldArray pointList
 	where
-		itemList = array oldGrid
-		pointList = [itemPoint newGrid index | index <- take (length $ array newGrid) [0..]]
+		pointList = [itemPoint newGrid index | index <- take (length newArray) [0..]]
 
 flipAboutVertical :: Grid t -> Grid t
-flipAboutVertical grid = Grid newArray newWidth
+flipAboutVertical grid@(Grid _ width) = Grid newArray width
 	where
-		newArray = [unsafeItemAt grid $ Point ((width grid) - x - 1) y | Point x y <- range origin $ maxPoint grid]
-		newWidth = width grid
+		newArray = [unsafeItemAt grid $ Point (width - x - 1) y | Point x y <- range origin $ maxPoint grid]
 
 transpose :: Grid t -> Grid t
 transpose grid = Grid newArray newWidth
@@ -100,6 +98,6 @@ transpose grid = Grid newArray newWidth
 rotate90 = flipAboutVertical . transpose
 
 rotate180 :: Grid t -> Grid t
-rotate180 grid = Grid (reverse $ array grid) (width grid)
+rotate180 (Grid array width) = Grid (reverse array) width
 
 rotate270  = rotate90 . rotate180

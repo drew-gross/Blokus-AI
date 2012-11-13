@@ -76,8 +76,8 @@ allValidMovesForPlayer :: Player -> Board -> [Move]
 allValidMovesForPlayer (Player pieces _ _) board = concatMap (validMovesForPiece board) pieces
 
 getUnrotatedPiece :: Player -> Board -> IO Piece
-getUnrotatedPiece player board = do
-	maybePiece <- fmap (maybeIndex $ pieces player) $ fmap read1IndexedIndex $ prompt promptString
+getUnrotatedPiece player@(Player pieces _ _) board = do
+	maybePiece <- fmap (maybeIndex pieces) $ fmap read1IndexedIndex $ prompt promptString
 	fromMaybe (getUnrotatedPiece player board) $ fmap return maybePiece
 	where
 		promptString = displayToUserForPlayer player board ++ "\n" ++ (display player) ++ "\n" ++ "Enter piece number: "
@@ -96,8 +96,8 @@ getMove player board = do
 	return $ Just (move, applyMove board move, removePiece player piece)
 
 displayForPlayer :: Player -> Board -> String
-displayForPlayer (Player _ color _) (Board grid sp) = let
-	chars = map (displayChar (Board grid sp) color) (range origin $ maxPoint grid)
+displayForPlayer (Player _ color _) board@(Board grid sp) = let
+	chars = map (displayChar board color) (range origin $ maxPoint grid)
 	splitChars = chunksOf (width grid) chars 
 	in unlines splitChars
 
