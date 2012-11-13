@@ -122,8 +122,8 @@ completeUserTurn player board = do
 			completeUserTurn player board
 
 aiSelectedMove :: Player -> Board -> Maybe Move
-aiSelectedMove player board = maybeHead $ allValidMovesForPlayer player board
-		
+aiSelectedMove player board = maybeHead $ reverse $ sortBy (compare `on` squaresUsed) $ allValidMovesForPlayer player board
+
 completeAiTurn :: Player -> Board -> IO (Maybe (Board, Player))
 completeAiTurn player board = return $ (,) <$> updatedBoard <*> updatedPlayer
 	where
