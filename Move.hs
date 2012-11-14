@@ -26,10 +26,10 @@ candidateMovesForPieceRotation board@(Board boardGrid _) piece@(Piece pieceGrid 
 	in map (Move piece board) $ range origin maxPlacementPoint
 
 validMovesForPieceRotation :: Board -> Piece -> [Move]
-validMovesForPieceRotation board piece = filter isValid (candidateMovesForPieceRotation board piece)
+validMovesForPieceRotation board piece = filter isValid $ candidateMovesForPieceRotation board piece
 
 validMovesForPiece :: Board -> Piece -> [Move]
-validMovesForPiece board piece = concatMap (validMovesForPieceRotation board) (rotations piece)
+validMovesForPiece board piece = concatMap (validMovesForPieceRotation board) $ rotations piece
 
 apply :: Move -> Board
 apply (Move piece board position) = foldl (changeColorAt' $ Piece.color piece) board pointsOnBoard
