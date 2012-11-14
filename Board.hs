@@ -4,7 +4,7 @@ module Board(
 	isMoveValid,
 	validMovesForPiece,
 	empty2PlayerBoard,
-	displayChar
+	displayString
 ) where
 
 import Debug.Trace
@@ -115,12 +115,10 @@ isPointInBounds (Board grid _) (Point x y)
 	| y >= height grid = False
 	| otherwise = True
 
-displayChar :: Board -> Color -> Point -> Char
-displayChar board color point
+displayString :: Board -> Color -> Point -> String
+displayString board color point
 	| isPointInBounds board point == False = error "displayChar: point out of bounds of board"
-	| colorAt board point == Red =     'R'
-	| colorAt board point == Green =   'G'
-	| colorAt board point == Blue =    'B'
-	| colorAt board point == Yellow =  'Y'
-	| isPointLaunchPointForColor board color point = 'O'
-	| otherwise = '.'
+	| colorAtPoint /= Empty = display colorAtPoint
+	| isPointLaunchPointForColor board color point = "O"
+	| otherwise = "."
+	where colorAtPoint = colorAt board point
