@@ -1,9 +1,12 @@
 module Board(
 	Board(Board, grid, startPoints),
-	applyMove,
-	isMoveValid,
-	validMovesForPiece,
 	empty2PlayerBoard,
+	colorAt,
+	changeColorAt,
+	isPointInBounds,
+	isPointAdjacentToColor,
+	isPointCornerToColor,
+	isPointLaunchPointForColor,
 	displayString
 ) where
 
@@ -16,7 +19,6 @@ import Color
 import Point
 import Display
 import Utilities
-import Move
 import Piece
 
 data Board = Board {grid :: Grid Color, startPoints :: [Point]}
@@ -67,45 +69,9 @@ isPointLaunchPointForColor board color point
 	| otherwise = False
 	where colorAtPoint = colorAt board point
 
-isMoveValid :: Board -> Move -> Bool
-isMoveValid board move@(Move piece position)
-	| not $ isMoveInBounds board move = False --move is outside of board
-	| any (\point -> colorAt board point /= Empty) pointsOnBoard = False --move is overlapping another piece
-	| any (isPointAdjacentToColor board color) pointsOnBoard = False --side of piece is touching its own color
-	| any (isPointLaunchPointForColor board color) pointsOnBoard = True
-	| otherwise = False
-	where
-		color = Piece.color piece
-		pointsInPiece = filledPoints piece
-		pointsOnBoard = map (plus position) pointsInPiece
-
 prevPoint :: Piece -> Point -> Point
 prevPoint (Piece grid _) (Point 0 y) = Point (width grid - 1) (y - 1)
 prevPoint _ point = Point (x point - 1) (y point)
-
-applyMove :: Board -> Move -> Board
-applyMove board (Move piece position) = foldl (changeColorAt' $ Piece.color piece) board pointsOnBoard
-	where
-		pointsOnBoard = map (plus position) $ filledPoints piece
-		changeColorAt' :: Color -> Board -> Point -> Board
-		changeColorAt' color board = changeColorAt board color
-
-isMoveInBounds :: Board -> Move -> Bool
-isMoveInBounds board (Move (Piece grid _) position)
-	| not $ isPointInBounds board position = False
-	| not $ isPointInBounds board $ position `plus` (maxPoint grid) = False
-	| otherwise = True
-
-candidateMovesForPieceRotation :: Board -> Piece -> [Move]
-candidateMovesForPieceRotation (Board boardGrid _) piece@(Piece pieceGrid identifier) = let
-		maxPlacementPoint = ((maxPoint boardGrid) `minus` (maxPoint pieceGrid))
-	in map (Move piece) $ range origin maxPlacementPoint
-
-validMovesForPieceRotation :: Board -> Piece -> [Move]
-validMovesForPieceRotation board piece = filter (isMoveValid board) (candidateMovesForPieceRotation board piece)
-
-validMovesForPiece :: Board -> Piece -> [Move]
-validMovesForPiece board piece = concatMap (validMovesForPieceRotation board) (rotations piece)
 
 isPointInBounds :: Board -> Point -> Bool
 isPointInBounds (Board grid _) (Point x y)

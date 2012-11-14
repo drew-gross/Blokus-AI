@@ -92,8 +92,8 @@ getRotatedPiece player board = do
 getMove :: Player -> Board -> IO (Maybe (Move, Board, Player))
 getMove player board = do
 	piece <- getRotatedPiece player board
-	move <- Move <$> (return piece) <*> (fmap read1IndexedPoint getPoint)
-	return $ Just (move, applyMove board move, removePiece player piece)
+	move <- Move <$> (return piece) <*> (return board) <*> (fmap read1IndexedPoint getPoint)
+	return $ Just (move, apply move, removePiece player piece)
 
 displayForPlayer :: Player -> Board -> String
 displayForPlayer (Player _ color _) board@(Board grid sp) = unlines $ concat splitChars
@@ -111,7 +111,7 @@ completeUserTurn player board = do
 		return Nothing
 	else do
 		let (move, updatedBoard, updatedPlayer) = fromJust m
-		if isMoveValid board move then do
+		if isValid move then do
 			continue <- prompt $ displayToUserForPlayer updatedPlayer updatedBoard ++ "\n" ++ "Is this correct? (y/n): "
 			if continue == "y" then
 				return $ Just (updatedBoard, updatedPlayer)
@@ -128,7 +128,7 @@ completeAiTurn :: Player -> Board -> IO (Maybe (Board, Player))
 completeAiTurn player board = return $ (,) <$> updatedBoard <*> updatedPlayer
 	where
 		move = aiSelectedMove player board
-		updatedBoard = fmap (applyMove board) move
+		updatedBoard = fmap apply move
 		updatedPlayer = fmap (removePiece player) $ fmap piece move
 
 doTurn :: Player -> Board -> IO (Maybe (Board, Player))
