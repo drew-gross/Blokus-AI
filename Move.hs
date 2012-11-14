@@ -8,4 +8,8 @@ import Point
 
 data Move = Move {piece :: Piece, position :: Point}
 
-squaresUsed (Move piece _) = filledPointsCount piece
+coefficient :: Fractional a => a
+coefficient = 1.0
+
+squaresUsed :: Fractional a => Move -> a
+squaresUsed (Move piece _) = coefficient * (fromIntegral $ filledPointsCount piece)
