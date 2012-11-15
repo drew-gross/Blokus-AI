@@ -3,6 +3,7 @@ module Move(
 	squaresUsed,
 	apply,
 	isValid,
+	fitness,
 	validMovesForPiece
 ) where
 
@@ -27,6 +28,9 @@ launchPointsGained :: Fractional a => Move -> a
 launchPointsGained move@(Move piece board _) = coefficient2 * (fromIntegral ((numOfLaunchPointsForColor (apply move) color) - (numOfLaunchPointsForColor board color)))
 	where
 		color = Piece.color piece
+
+fitness :: Fractional a => Move -> a
+fitness move = squaresUsed move + launchPointsGained move
 
 candidateMovesForPieceRotation :: Board -> Piece -> [Move]
 candidateMovesForPieceRotation board@(Board boardGrid _) piece@(Piece pieceGrid identifier) = let
