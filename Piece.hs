@@ -1,7 +1,7 @@
 module Piece(
 	Piece(Piece, grid),
 	rotations,
-	color,
+	Piece.color,
 	filledPoints,
 	filledPointsCount
 ) where
@@ -19,16 +19,17 @@ instance Display Piece where
 	display =  display . grid
 
 instance Eq Piece where
-	(==) left right = color left == color right && identifier left == identifier right
+	(==) left right = Piece.color left == Piece.color right && identifier left == identifier right
 	(/=) left right = not $ left == right
 
 color :: Piece -> Color
-color (Piece (Grid array width) _) = head $ filter (/= Empty) array
+color (Piece grid _) = Grid.color grid
 
 pieceWithID = flip Piece
 
 rotations :: Piece -> [Piece]
-rotations (Piece grid identifier) = map (pieceWithID identifier) (nub $ map ($ grid) [id, 
+rotations (Piece grid identifier) = map (pieceWithID identifier) (nub $ map ($ grid) [
+														  id, 
 											 			  rotate90,
 											 			  rotate180, 
 											 			  rotate270, 
