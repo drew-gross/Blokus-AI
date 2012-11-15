@@ -14,11 +14,19 @@ import Color
 
 data Move = Move {piece :: Piece, board :: Board, position :: Point}
 
-coefficient :: Fractional a => a
-coefficient = 1.0
+coefficient1 :: Fractional a => a
+coefficient1 = 1.0
+
+coefficient2 :: Fractional a => a
+coefficient2 = 1.0
 
 squaresUsed :: Fractional a => Move -> a
-squaresUsed (Move piece _ _) = coefficient * (fromIntegral $ filledPointsCount piece)
+squaresUsed (Move piece _ _) = coefficient1 * (fromIntegral $ filledPointsCount piece)
+
+launchPointsGained :: Fractional a => Move -> a
+launchPointsGained move@(Move piece board _) = coefficient2 * (fromIntegral ((numOfLaunchPointsForColor (apply move) color) - (numOfLaunchPointsForColor board color)))
+	where
+		color = Piece.color piece
 
 candidateMovesForPieceRotation :: Board -> Piece -> [Move]
 candidateMovesForPieceRotation board@(Board boardGrid _) piece@(Piece pieceGrid identifier) = let
@@ -53,5 +61,4 @@ isValid move@(Move piece board position)
 	| otherwise = False
 	where
 		color = Piece.color piece
-		pointsInPiece = filledPoints piece
-		pointsOnBoard = map (plus position) pointsInPiece
+		pointsOnBoard = map (plus position) $ filledPoints piece

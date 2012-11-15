@@ -7,6 +7,7 @@ module Board(
 	isPointAdjacentToColor,
 	isPointCornerToColor,
 	isPointLaunchPointForColor,
+	numOfLaunchPointsForColor,
 	displayString
 ) where
 
@@ -68,6 +69,12 @@ isPointLaunchPointForColor board color point
 	| point `elem` startPoints board = True
 	| otherwise = False
 	where colorAtPoint = colorAt board point
+
+launchPointsForColor :: Board -> Color -> [Point]
+launchPointsForColor board@(Board grid _) color = filter (isPointLaunchPointForColor board color) $ allPoints grid
+
+numOfLaunchPointsForColor :: Board -> Color -> Int
+numOfLaunchPointsForColor board = length . (launchPointsForColor board)
 
 prevPoint :: Piece -> Point -> Point
 prevPoint (Piece grid _) (Point 0 y) = Point (width grid - 1) (y - 1)
