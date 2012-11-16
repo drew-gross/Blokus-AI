@@ -43,31 +43,31 @@ removePiece (Player pieces color doTurn) piece = Player (pieces \\ [piece]) colo
 
 startingGrids color = 
 			 [
-			 makeFilledGrid [color] 1, --1
+			 makeFilledGridWithList [color] 1, --1
 
-			 makeFilledGrid [color, color] 2, --2
+			 makeFilledGridWithList [color, color] 2, --2
 
-			 makeFilledGrid [color, color, color] 3, --I3
-			 makeFilledGrid [color, Empty, color, color] 2, --V3
+			 makeFilledGridWithList [color, color, color] 3, --I3
+			 makeFilledGridWithList [color, Empty, color, color] 2, --V3
 
-			 makeFilledGrid [color, color, color, color] 4, --I4
-			 makeFilledGrid [color, color, color, Empty, color, Empty] 3, --T4
-			 makeFilledGrid [color, color, color, Empty, Empty, color] 3, --L4
-			 makeFilledGrid [color, color, Empty, Empty, color, color] 3, --Z4
-			 makeFilledGrid [color, color, color, color] 2, --O
+			 makeFilledGridWithList [color, color, color, color] 4, --I4
+			 makeFilledGridWithList [color, color, color, Empty, color, Empty] 3, --T4
+			 makeFilledGridWithList [color, color, color, Empty, Empty, color] 3, --L4
+			 makeFilledGridWithList [color, color, Empty, Empty, color, color] 3, --Z4
+			 makeFilledGridWithList [color, color, color, color] 2, --O
 
-			 makeFilledGrid [color, color, color, color, color] 5, --I5
-			 makeFilledGrid [color, color, color, color, color, Empty, Empty, Empty] 4, --L5
-			 makeFilledGrid [color, color, color, color, Empty, color, Empty, Empty] 4, --Y
-			 makeFilledGrid [Empty, color, color, color, color, color, Empty, Empty] 4, --N
-			 makeFilledGrid [color, color, color, color, color, Empty] 3, --P
-			 makeFilledGrid [color, color, color, color, Empty, color] 3, --U
-			 makeFilledGrid [Empty, color, Empty, color, color, color, Empty, color, Empty] 3, --X
-			 makeFilledGrid [color, color, color, color, Empty, Empty, color, Empty, Empty] 3, --V5
-			 makeFilledGrid [color, color, color, Empty, color, Empty, Empty, color, Empty] 3, --T5
-			 makeFilledGrid [color, Empty, Empty, color, color, color, Empty, Empty, color] 3, --Z5
-			 makeFilledGrid [color, Empty, Empty, color, color, Empty, Empty, color, color] 3, --W
-			 makeFilledGrid [Empty, color, color, color, color, Empty, Empty, color, Empty] 3 --F
+			 makeFilledGridWithList [color, color, color, color, color] 5, --I5
+			 makeFilledGridWithList [color, color, color, color, color, Empty, Empty, Empty] 4, --L5
+			 makeFilledGridWithList [color, color, color, color, Empty, color, Empty, Empty] 4, --Y
+			 makeFilledGridWithList [Empty, color, color, color, color, color, Empty, Empty] 4, --N
+			 makeFilledGridWithList [color, color, color, color, color, Empty] 3, --P
+			 makeFilledGridWithList [color, color, color, color, Empty, color] 3, --U
+			 makeFilledGridWithList [Empty, color, Empty, color, color, color, Empty, color, Empty] 3, --X
+			 makeFilledGridWithList [color, color, color, color, Empty, Empty, color, Empty, Empty] 3, --V5
+			 makeFilledGridWithList [color, color, color, Empty, color, Empty, Empty, color, Empty] 3, --T5
+			 makeFilledGridWithList [color, Empty, Empty, color, color, color, Empty, Empty, color] 3, --Z5
+			 makeFilledGridWithList [color, Empty, Empty, color, color, Empty, Empty, color, color] 3, --W
+			 makeFilledGridWithList [Empty, color, color, color, color, Empty, Empty, color, Empty] 3 --F
 			 ]
 	
 startingPieces color = zipWith (Piece) (startingGrids color) $ [1..]
