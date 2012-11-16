@@ -37,7 +37,7 @@ instance Display t => Display (Grid t) where
 	display = display . rows
 
 makeEmptyGrid :: Int -> Int -> t -> Grid t
-makeEmptyGrid width height defaultCell = Grid (Data.Vector.take arraySize $ fromList $ repeat defaultCell) width height
+makeEmptyGrid width height defaultCell = Grid (fromList $ Prelude.replicate arraySize defaultCell) width height
 	where
 		arraySize = width * height
 
