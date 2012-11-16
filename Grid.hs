@@ -21,7 +21,7 @@ module Grid (
 	rotate180,
 	rotate270,
 ) where
-	
+
 import Data.List.Split
 import Data.Vector
 import Data.Maybe
@@ -85,13 +85,14 @@ itemAt grid@(Grid array _ _) point
 	| otherwise = array !? itemIndex grid point
 
 changeItemAt :: Grid t -> t -> Point -> Grid t
-changeItemAt grid@(Grid array width height) newItem point = Grid (fromList [if index == newItemIndex then newItem else item | (index, item) <- indexItemPairs]) width height
+changeItemAt grid@(Grid array width height) newItem point = Grid (fromList newList) width height
 	where
+		newList = [if index == newItemIndex then newItem else item | (index, item) <- indexItemPairs]
 		newItemIndex = itemIndex grid point
-		indexItemPairs = Data.Vector.toList $ Data.Vector.zip intVector array
-		intVector = fromList $ Prelude.take (Data.Vector.length array) [0..1]
+		indexItemPairs = Prelude.zip [0..] list
+		list = toList array
 
-changeItemsAt :: Grid t -> Vector t -> [Point] -> Grid t
+changeItemsAt :: Grid t -> Vector t -> [Point] -> Grid t 
 changeItemsAt grid indexes (point:points)
 	| Prelude.length points == 1 = gridWithFirstItemChanged
 	| otherwise = changeItemsAt gridWithFirstItemChanged (Data.Vector.tail indexes) points

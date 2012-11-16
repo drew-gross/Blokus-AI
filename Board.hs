@@ -11,8 +11,6 @@ module Board(
 	displayString
 ) where
 
-import Debug.Trace
-
 import Data.List.Split
 import Data.Maybe
 
@@ -34,7 +32,7 @@ empty2PlayerBoard = Board (makeEmptyGrid defaultSize defaultSize Empty) defaultS
 colorAt :: Board -> Point -> Color
 colorAt (Board grid _) point
 	| not $ containsPoint grid point = error "colorAt: point outside of board"
-	| isNothing item = error $ "colorAt has a Nothin as its item" ++ show grid
+	| isNothing item = error $ "colorAt has a Nothing as its item!\n" ++ show grid
 	| otherwise = fromJust $ item
 	where
 		item = itemAt grid point
@@ -72,13 +70,13 @@ isPointLaunchPointForColor board color point
 	| isPointCornerToColor board color point = True
 	| point `elem` startPoints board = True
 	| otherwise = False
-	where colorAtPoint = trace ("isLaunchPoint:" ++ show board) $ colorAt board point
+	where colorAtPoint = colorAt board point
 
 launchPointsForColor :: Board -> Color -> [Point]
-launchPointsForColor board@(Board grid _) color = trace ("launchPointsForColor:" ++ show board) $ filter (isPointLaunchPointForColor board color) $ allPoints grid
+launchPointsForColor board@(Board grid _) color = filter (isPointLaunchPointForColor board color) $ allPoints grid
 
 numOfLaunchPointsForColor :: Board -> Color -> Int
-numOfLaunchPointsForColor board = trace ("num blah blah blah:" ++ show board) length . (launchPointsForColor board)
+numOfLaunchPointsForColor board = length . (launchPointsForColor board)
 
 prevPoint :: Piece -> Point -> Point
 prevPoint (Piece grid _) (Point 0 y) = Point (width grid - 1) (y - 1)

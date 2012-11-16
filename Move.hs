@@ -7,8 +7,6 @@ module Move(
 	validMovesForPiece
 ) where
 
-import Debug.Trace
-
 import Piece
 import Point
 import Board
@@ -27,7 +25,7 @@ squaresUsed :: Fractional a => Move -> a
 squaresUsed (Move piece _ _) = coefficient1 * (fromIntegral $ filledPointsCount piece)
 
 launchPointsGained :: Fractional a => Move -> a
-launchPointsGained move@(Move piece board _) = trace ("launchPointsGained before applying:\n\n\n" ++ show board ++ "after applying:\n\n\n" ++ (show $ apply move)) $ coefficient2 * (fromIntegral ((numOfLaunchPointsForColor (apply move) color) - (numOfLaunchPointsForColor board color)))
+launchPointsGained move@(Move piece board _) = coefficient2 * (fromIntegral ((numOfLaunchPointsForColor (apply move) color) - (numOfLaunchPointsForColor board color)))
 	where
 		color = Piece.color piece
 
@@ -46,8 +44,9 @@ validMovesForPiece :: Board -> Piece -> [Move]
 validMovesForPiece board piece = concatMap (validMovesForPieceRotation board) $ rotations piece
 
 apply :: Move -> Board
-apply (Move piece board position) = trace ("apply:" ++ show pointsOnBoard) foldl (changeColorAt' $ Piece.color piece) board pointsOnBoard
+apply (Move piece board position) = modifiedBoard 
 	where
+		modifiedBoard = foldl (changeColorAt' $ Piece.color piece) board pointsOnBoard
 		pointsOnBoard = map (plus position) $ filledPoints piece
 		changeColorAt' :: Color -> Board -> Point -> Board
 		changeColorAt' color board = changeColorAt board color
