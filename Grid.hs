@@ -42,7 +42,12 @@ makeEmptyGrid width height defaultCell = Grid (fromList $ Prelude.replicate arra
 		arraySize = width * height
 
 makeFilledGridWithList :: [t] -> Int -> Grid t
-makeFilledGridWithList array width = Grid (fromList array) width $ (Prelude.length array) `div` width
+makeFilledGridWithList array width 
+	| Prelude.null array = error "can't use an empty list!"
+	| arrayLength `mod` width /= 0 = error "array length isn't a muliple of the width!"
+	| otherwise = Grid (fromList array) width $ arrayLength `div` width
+	where
+		arrayLength = Prelude.length array
 
 rows :: Grid t -> [[t]]
 rows (Grid array width _) = chunksOf width $ toList array
@@ -54,7 +59,12 @@ allPoints :: Grid t -> [Point]
 allPoints grid = range origin (maxPoint grid)
 
 containsPoint :: Grid t -> Point -> Bool
-containsPoint grid (Point x y) = x >= 0 && x < width grid && y >= 0 && y < height grid
+containsPoint grid (Point x y)
+	| x < 0 = False
+	| y < 0 = False
+	| x >= width grid = False
+	| y >= height grid = False
+	| otherwise = True
 
 itemIndex :: Grid t -> Point -> Int
 itemIndex grid (Point x y) = (y * (width grid)) + x
@@ -75,10 +85,11 @@ itemAt grid@(Grid array _ _) point
 	| otherwise = array !? itemIndex grid point
 
 changeItemAt :: Grid t -> t -> Point -> Grid t
-changeItemAt grid@(Grid array width height) newItem point = Grid (fromList [if index == newItemIndex then newItem else item | (index, item) <- Data.Vector.toList indexItemPairs]) width height
+changeItemAt grid@(Grid array width height) newItem point = Grid (fromList [if index == newItemIndex then newItem else item | (index, item) <- indexItemPairs]) width height
 	where
 		newItemIndex = itemIndex grid point
-		indexItemPairs = Data.Vector.zip (fromList [0..]) array
+		indexItemPairs = Data.Vector.toList $ Data.Vector.zip intVector array
+		intVector = fromList $ Prelude.take (Data.Vector.length array) [0..1]
 
 changeItemsAt :: Grid t -> Vector t -> [Point] -> Grid t
 changeItemsAt grid indexes (point:points)
