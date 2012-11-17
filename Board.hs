@@ -12,6 +12,7 @@ module Board(
 ) where
 
 import Data.List.Split
+
 import Data.Maybe
 
 import Grid

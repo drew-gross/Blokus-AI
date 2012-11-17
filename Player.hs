@@ -2,16 +2,14 @@ module Player(
 	Player(Player, color, pieces),
 	doTurn,
 	removePiece,
-	newHuman,
-	newComputer,
+	startingPieces,
+	getRotatedPiece,
+	displayToUserForPlayer,
 	winner
 ) where
 
-import Control.Applicative
-
 import Data.List
 import Data.List.Split
-
 import Data.Maybe
 import Data.Function
 
@@ -21,7 +19,6 @@ import Display
 import Piece
 import Utilities
 import Board
-import Move
 import Point
 
 data Player = Player {pieces :: [Piece], color :: Color, completeMove :: Player -> Board -> IO (Maybe (Board, Player))}
@@ -31,12 +28,6 @@ instance Display Player where
 		pieceAnnotations = ["Piece " ++ show num ++ ":\n" | num <- [1..]]
 		pieceStrings = map display $ pieces player
 		in concat $ zipWith (++) pieceAnnotations pieceStrings
-
-newHuman :: Color -> Player
-newHuman color = Player (startingPieces color) color completeUserTurn
-
-newComputer :: Color -> Player
-newComputer color = Player (startingPieces color) color completeAiTurn
 
 removePiece :: Player -> Piece -> Player
 removePiece (Player pieces color doTurn) piece = Player (pieces \\ [piece]) color doTurn
@@ -72,9 +63,6 @@ startingGrids color =
 	
 startingPieces color = zipWith (Piece) (startingGrids color) $ [1..]
 
-allValidMovesForPlayer :: Player -> Board -> [Move]
-allValidMovesForPlayer (Player pieces _ _) board = concatMap (validMovesForPiece board) pieces
-
 getUnrotatedPiece :: Player -> Board -> IO Piece
 getUnrotatedPiece player@(Player pieces _ _) board = do
 	maybePiece <- fmap (maybeIndex pieces) $ fmap read1IndexedIndex $ prompt promptString
@@ -89,12 +77,6 @@ getRotatedPiece player board = do
 	maybeRotatedPiece <- fmap (maybeIndex rotatedPieceList) $ fmap read1IndexedIndex $ prompt promptString
 	fromMaybe (getRotatedPiece player board) $ fmap return maybeRotatedPiece
 
-getMove :: Player -> Board -> IO (Maybe (Move, Board, Player))
-getMove player board = do
-	piece <- getRotatedPiece player board
-	move <- Move <$> (return piece) <*> (return board) <*> (fmap read1IndexedPoint getPoint)
-	return $ Just (move, apply move, removePiece player piece)
-
 displayForPlayer :: Player -> Board -> String
 displayForPlayer (Player _ color _) board@(Board grid sp) = unlines $ concat splitChars
 	where
@@ -103,33 +85,6 @@ displayForPlayer (Player _ color _) board@(Board grid sp) = unlines $ concat spl
 
 displayToUserForPlayer :: Player -> Board -> String
 displayToUserForPlayer player board = (++) " 12345678901234\n" $ unlines $ zipWith (++) (map show repeatedSingleDigits) (lines $ displayForPlayer player board)
-
-completeUserTurn :: Player -> Board -> IO (Maybe (Board, Player))
-completeUserTurn player board = do
-	m <- getMove player board
-	if isNothing m then
-		return Nothing
-	else do
-		let (move, updatedBoard, updatedPlayer) = fromJust m
-		if isValid move then do
-			continue <- prompt $ displayToUserForPlayer updatedPlayer updatedBoard ++ "\n" ++ "Is this correct? (y/n): "
-			if continue == "y" then
-				return $ Just (updatedBoard, updatedPlayer)
-			else
-				completeUserTurn player board
-		else do
-			putStr "Invalid Move!\n"
-			completeUserTurn player board
-
-aiSelectedMove :: Player -> Board -> Maybe Move
-aiSelectedMove player board = maybeHead $ reverse $ sortBy (compare `on` fitness) $ allValidMovesForPlayer player board
-
-completeAiTurn :: Player -> Board -> IO (Maybe (Board, Player))
-completeAiTurn player board = return $ (,) <$> updatedBoard <*> updatedPlayer
-	where
-		move = aiSelectedMove player board
-		updatedBoard = fmap apply move
-		updatedPlayer = fmap (removePiece player) $ fmap piece move
 
 doTurn :: Player -> Board -> IO (Maybe (Board, Player))
 doTurn player board = completeMove player player board

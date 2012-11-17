@@ -4,6 +4,7 @@ import Board
 import Player
 import Color
 import Display
+import Move
 
 playGame :: (Board, [Player]) -> IO ()
 playGame (board, players@(player:otherPlayers)) = do
