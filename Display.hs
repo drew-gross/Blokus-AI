@@ -5,11 +5,13 @@ module Display(
 	displayNumberedList,
 ) where
 
+import Control.Applicative
+
 class Display a where
 	display :: a -> String
 
 instance (Display a) => Display [a] where
-	display list = concatMap display list ++ "\n"
+	display list = unlines $ display <$> list
 
 printDisplay :: Display a => a -> IO ()
 printDisplay = putStrLn . display

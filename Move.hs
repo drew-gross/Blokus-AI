@@ -1,11 +1,5 @@
 module Move(
 	Move(Move, piece, position),
-	squaresUsed,
-	apply,
-	isValid,
-	fitness,
-	validMovesForPiece,
-	validMovesForPlayer,
 	newHuman,
 	newComputer
 ) where
@@ -52,18 +46,18 @@ fitness move = squaresUsed move + launchPointsGained move
 candidateMovesForPieceRotation :: Board -> Piece -> [Move]
 candidateMovesForPieceRotation board@(Board boardGrid _) piece@(Piece pieceGrid identifier) = let
 		maxPlacementPoint = ((maxPoint boardGrid) `minus` (maxPoint pieceGrid))
-	in map (Move piece board) $ range origin maxPlacementPoint
+	in Move piece board <$> range origin maxPlacementPoint
 
 validMovesForPieceRotation :: Board -> Piece -> [Move]
 validMovesForPieceRotation board piece = filter isValid $ candidateMovesForPieceRotation board piece
 
 validMovesForPiece :: Board -> Piece -> [Move]
-validMovesForPiece board piece = concatMap (validMovesForPieceRotation board) $ rotations piece
+validMovesForPiece board piece = concat $ validMovesForPieceRotation board <$> rotations piece
 
 getMove :: Player -> Board -> IO (Maybe (Move, Board, Player))
 getMove player board = do
 	piece <- getRotatedPiece player board
-	move <- Move <$> (return piece) <*> (return board) <*> (fmap read1IndexedPoint getPoint)
+	move <- Move <$> (return piece) <*> (return board) <*> read1IndexedPoint <$> getPoint
 	return $ Just (move, apply move, removePiece player piece)
 
 completeUserTurn :: Player -> Board -> IO (Maybe (Board, Player))
@@ -87,12 +81,12 @@ apply :: Move -> Board
 apply (Move piece board position) = modifiedBoard 
 	where
 		modifiedBoard = foldl (changeColorAt' $ Piece.color piece) board pointsOnBoard
-		pointsOnBoard = map (plus position) $ filledPoints piece
+		pointsOnBoard = plus position <$> filledPoints piece
 		changeColorAt' :: Color -> Board -> Point -> Board
 		changeColorAt' color board = changeColorAt board color
 
 validMovesForPlayer :: Player -> Board -> [Move]
-validMovesForPlayer (Player pieces _ _) board = concatMap (validMovesForPiece board) pieces
+validMovesForPlayer (Player pieces _ _) board = concat $ validMovesForPiece board <$> pieces
 
 aiSelectedMove :: Player -> Board -> Maybe Move
 aiSelectedMove player board = maybeHead $ reverse $ sortBy (compare `on` fitness) $ validMovesForPlayer player board
@@ -101,8 +95,8 @@ completeAiTurn :: Player -> Board -> IO (Maybe (Board, Player))
 completeAiTurn player board = return $ (,) <$> updatedBoard <*> updatedPlayer
 	where
 		move = aiSelectedMove player board
-		updatedBoard = fmap apply move
-		updatedPlayer = fmap (removePiece player) $ fmap piece move
+		updatedBoard = apply <$> move
+		updatedPlayer = removePiece player <$> piece <$> move
 
 isInBounds :: Move -> Bool
 isInBounds (Move (Piece grid _) board position)
@@ -119,4 +113,4 @@ isValid move@(Move piece board position)
 	| otherwise = False
 	where
 		color = Piece.color piece
-		pointsOnBoard = map (plus position) $ filledPoints piece
+		pointsOnBoard = plus position <$> filledPoints piece

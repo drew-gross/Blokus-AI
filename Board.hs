@@ -11,8 +11,9 @@ module Board(
 	displayString
 ) where
 
-import Data.List.Split
+import Control.Applicative
 
+import Data.List.Split
 import Data.Maybe
 
 import Grid
@@ -46,16 +47,16 @@ cornersOfPoint (Board grid _) point
 	| not $ containsPoint grid point = error "index out of range"
 	| otherwise = catMaybes items
 	where
-		points = map ($ point) [ulPoint, urPoint, drPoint, dlPoint]
-		items = map (itemAt grid) points
+		points = ($ point) <$> [ulPoint, urPoint, drPoint, dlPoint]
+		items = itemAt grid <$> points
 
 sidesOfPoint :: Board -> Point -> [Color]
 sidesOfPoint (Board grid _) point
 	| not $ containsPoint grid point = error "index out of range"
 	| otherwise = catMaybes items
 	where
-		points = map ($ point) [leftPoint, rightPoint, upPoint, downPoint]
-		items = map (itemAt grid) points
+		points = ($ point) <$> [leftPoint, rightPoint, upPoint, downPoint]
+		items = itemAt grid <$> points
 
 isPointAdjacentToColor :: Board -> Color -> Point -> Bool
 isPointAdjacentToColor board color point = color `elem` sidesOfPoint board point

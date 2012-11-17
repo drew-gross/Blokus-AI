@@ -6,6 +6,8 @@ module Piece(
 	filledPointsCount
 ) where
 
+import Control.Applicative
+
 import Data.List
 
 import Point
@@ -28,7 +30,7 @@ color (Piece grid _) = Grid.color grid
 pieceWithID = flip Piece
 
 rotations :: Piece -> [Piece]
-rotations (Piece grid identifier) = map (pieceWithID identifier) (nub $ map ($ grid) [
+rotations (Piece grid identifier) = pieceWithID identifier <$> (nub $ ($ grid) <$> [
 														  id, 
 											 			  rotate90,
 											 			  rotate180, 

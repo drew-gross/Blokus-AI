@@ -8,6 +8,8 @@ module Player(
 	winner
 ) where
 
+import Control.Applicative
+
 import Data.List
 import Data.List.Split
 import Data.Maybe
@@ -26,7 +28,7 @@ data Player = Player {pieces :: [Piece], color :: Color, completeMove :: Player 
 instance Display Player where
 	display player = let
 		pieceAnnotations = ["Piece " ++ show num ++ ":\n" | num <- [1..]]
-		pieceStrings = map display $ pieces player
+		pieceStrings = display <$> pieces player
 		in concat $ zipWith (++) pieceAnnotations pieceStrings
 
 removePiece :: Player -> Piece -> Player
@@ -65,32 +67,32 @@ startingPieces color = zipWith (Piece) (startingGrids color) $ [1..]
 
 getUnrotatedPiece :: Player -> Board -> IO Piece
 getUnrotatedPiece player@(Player pieces _ _) board = do
-	maybePiece <- fmap (maybeIndex pieces) $ fmap read1IndexedIndex $ prompt promptString
-	fromMaybe (getUnrotatedPiece player board) $ fmap return maybePiece
+	maybePiece <- maybeIndex pieces <$> read1IndexedIndex <$> prompt promptString
+	fromMaybe (getUnrotatedPiece player board) $ return <$> maybePiece
 	where
 		promptString = displayToUserForPlayer player board ++ "\n" ++ (display player) ++ "\n" ++ "Enter piece number: "
 
 getRotatedPiece :: Player -> Board -> IO Piece
 getRotatedPiece player board = do
-	rotatedPieceList <- fmap rotations $ getUnrotatedPiece player board
+	rotatedPieceList <- rotations <$> getUnrotatedPiece player board
 	let promptString = (displayNumberedList $ rotatedPieceList) ++ "\n" ++ "Enter rotation number:"
-	maybeRotatedPiece <- fmap (maybeIndex rotatedPieceList) $ fmap read1IndexedIndex $ prompt promptString
-	fromMaybe (getRotatedPiece player board) $ fmap return maybeRotatedPiece
+	maybeRotatedPiece <- maybeIndex rotatedPieceList <$> read1IndexedIndex <$> prompt promptString
+	fromMaybe (getRotatedPiece player board) $ return <$> maybeRotatedPiece
 
 displayForPlayer :: Player -> Board -> String
 displayForPlayer (Player _ color _) board@(Board grid sp) = unlines $ concat splitChars
 	where
-		strings = map (displayString board color) (range origin $ maxPoint grid)
+		strings = displayString board color <$> (range origin $ maxPoint grid)
 		splitChars = chunksOf (width grid) strings 
 
 displayToUserForPlayer :: Player -> Board -> String
-displayToUserForPlayer player board = (++) " 12345678901234\n" $ unlines $ zipWith (++) (map show repeatedSingleDigits) (lines $ displayForPlayer player board)
+displayToUserForPlayer player board = (++) " 12345678901234\n" $ unlines $ zipWith (++) (show <$> repeatedSingleDigits) (lines $ displayForPlayer player board)
 
 doTurn :: Player -> Board -> IO (Maybe (Board, Player))
 doTurn player board = completeMove player player board
 
 squaresRemaining :: Player -> Int
-squaresRemaining (Player pieces _ _)= sum $ map filledPointsCount pieces
+squaresRemaining (Player pieces _ _)= sum $ filledPointsCount <$> pieces
 
 winner :: [Player] -> Player
 winner players = head $ sortBy (compare `on` squaresRemaining) players

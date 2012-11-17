@@ -67,4 +67,4 @@ transposeRange (Point startX startY) (Point endX endY) = [Point x y | x <- [star
 read1IndexedPoint = (flip minus $ Point 1 1)
 
 getPoint :: IO Point
-getPoint = Point <$> (fmap read $ prompt "Enter x: ") <*> (fmap read $ prompt "Enter y: ")
+getPoint = Point <$> (read <$> prompt "Enter x: ") <*> (read <$> prompt "Enter y: ")
