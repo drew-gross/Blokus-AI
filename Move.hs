@@ -32,16 +32,24 @@ coefficient1 = 1.0
 coefficient2 :: Fractional a => a
 coefficient2 = 1.0
 
-squaresUsed :: Fractional a => Move -> a
-squaresUsed (Move piece _ _) = coefficient1 * (fromIntegral $ filledPointsCount piece)
+coefficient3 :: Fractional a => a
+coefficient3 = 1.0
 
-launchPointsGained :: Fractional a => Move -> a
-launchPointsGained move@(Move piece board _) = coefficient2 * (fromIntegral ((numOfLaunchPointsForColor (apply move) color) - (numOfLaunchPointsForColor board color)))
+squaresUsed :: Fractional a => Move -> Player -> a
+squaresUsed (Move piece _ _) _ = coefficient1 * (fromIntegral $ filledPointsCount piece)
+
+launchPointsGained :: Fractional a => Move -> Player -> a
+launchPointsGained move@(Move piece board _) _ = coefficient2 * (fromIntegral ((numOfLaunchPointsForColor (apply move) color) - (numOfLaunchPointsForColor board color)))
 	where
 		color = Piece.color piece
 
-fitness :: Fractional a => Move -> a
-fitness move = squaresUsed move + launchPointsGained move
+enemyLaunchPointsLost :: Fractional a => Move -> Player -> a
+enemyLaunchPointsLost move@(Move piece board _) enemy = coefficient3 * (fromIntegral ((numOfLaunchPointsForColor board enemyColor) - numOfLaunchPointsForColor (apply move) enemyColor))
+	where
+		enemyColor = Player.color enemy
+
+fitness :: Fractional a => Move -> Player -> a
+fitness move enemy = squaresUsed move enemy + launchPointsGained move enemy + enemyLaunchPointsLost move enemy
 
 candidateMovesForPieceRotation :: Board -> Piece -> [Move]
 candidateMovesForPieceRotation board@(Board boardGrid _) piece@(Piece pieceGrid identifier) = let
@@ -54,15 +62,15 @@ validMovesForPieceRotation board piece = filter isValid $ candidateMovesForPiece
 validMovesForPiece :: Board -> Piece -> [Move]
 validMovesForPiece board piece = concat $ validMovesForPieceRotation board <$> rotations piece
 
-getMove :: Player -> Board -> IO (Maybe (Move, Board, Player))
-getMove player board = do
+getMove :: Player -> Board -> Player -> IO (Maybe (Move, Board, Player))
+getMove player board _ = do
 	piece <- getRotatedPiece player board
 	move <- Move <$> (return piece) <*> (return board) <*> read1IndexedPoint <$> getPoint
 	return $ Just (move, apply move, removePiece player piece)
 
-completeUserTurn :: Player -> Board -> IO (Maybe (Board, Player))
-completeUserTurn player board = do
-	m <- getMove player board
+completeUserTurn :: Player -> Board -> Player -> IO (Maybe (Board, Player))
+completeUserTurn player board enemy = do
+	m <- getMove player board enemy
 	if isNothing m then
 		return Nothing
 	else do
@@ -72,10 +80,10 @@ completeUserTurn player board = do
 			if continue == "y" then
 				return $ Just (updatedBoard, updatedPlayer)
 			else
-				completeUserTurn player board
+				completeUserTurn player board enemy
 		else do
 			putStr "Invalid Move!\n"
-			completeUserTurn player board
+			completeUserTurn player board enemy
 
 apply :: Move -> Board
 apply (Move piece board position) = modifiedBoard 
@@ -88,14 +96,19 @@ apply (Move piece board position) = modifiedBoard
 validMovesForPlayer :: Player -> Board -> [Move]
 validMovesForPlayer (Player pieces _ _) board = concat $ validMovesForPiece board <$> pieces
 
-aiSelectedMove :: Player -> Board -> Maybe Move
-aiSelectedMove player board = maybeHead $ reverse $ sortBy (compare `on` fitness) $ validMovesForPlayer player board
-
-completeAiTurn :: Player -> Board -> IO (Maybe (Board, Player))
-completeAiTurn player board = return $ (,) <$> updatedBoard <*> updatedPlayer
+aiSelectedMove :: Player -> Board -> Player -> Maybe Move
+aiSelectedMove player board enemy = maybeHead $ reverse $ sortBy (compare `on` fitness' enemy) $ validMovesForPlayer player board
 	where
-		move = aiSelectedMove player board
+		fitness' :: Fractional a => Player -> Move -> a
+		fitness' = flip fitness
+
+completeAiTurn :: Player -> Board -> Player -> IO (Maybe (Board, Player))
+completeAiTurn player board enemy = return $ (,) <$> updatedBoard <*> updatedPlayer
+	where
+		move = aiSelectedMove player board enemy
+		updatedBoard :: Maybe Board
 		updatedBoard = apply <$> move
+		updatedPlayer :: Maybe Player
 		updatedPlayer = removePiece player <$> piece <$> move
 
 isInBounds :: Move -> Bool

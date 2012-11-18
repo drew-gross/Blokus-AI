@@ -23,7 +23,7 @@ import Utilities
 import Board
 import Point
 
-data Player = Player {pieces :: [Piece], color :: Color, completeMove :: Player -> Board -> IO (Maybe (Board, Player))}
+data Player = Player {pieces :: [Piece], color :: Color, completeMove :: Player -> Board -> Player -> IO (Maybe (Board, Player))}
 
 instance Display Player where
 	display player = let
@@ -88,8 +88,8 @@ displayForPlayer (Player _ color _) board@(Board grid sp) = unlines $ concat spl
 displayToUserForPlayer :: Player -> Board -> String
 displayToUserForPlayer player board = (++) " 12345678901234\n" $ unlines $ zipWith (++) (show <$> repeatedSingleDigits) (lines $ displayForPlayer player board)
 
-doTurn :: Player -> Board -> IO (Maybe (Board, Player))
-doTurn player board = completeMove player player board
+doTurn :: Player -> Board -> Player -> IO (Maybe (Board, Player))
+doTurn player board enemy = completeMove player player board enemy
 
 squaresRemaining :: Player -> Int
 squaresRemaining (Player pieces _ _)= sum $ filledPointsCount <$> pieces
