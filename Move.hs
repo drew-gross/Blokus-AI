@@ -26,15 +26,6 @@ newHuman color = Player (startingPieces color) color completeUserTurn
 newComputer :: Color -> Player
 newComputer color = Player (startingPieces color) color completeAiTurn
 
-coefficient1 :: Fractional a => a
-coefficient1 = 1.0
-
-coefficient2 :: Fractional a => a
-coefficient2 = 1.0
-
-coefficient3 :: Fractional a => a
-coefficient3 = 1.0
-
 squaresUsed :: Fractional a => Move -> Player -> a
 squaresUsed (Move piece _ _) _ = fromIntegral $ filledPointsCount piece
 
@@ -48,7 +39,7 @@ enemyLaunchPointsLost move@(Move piece board _) enemy = fromIntegral $ numOfLaun
 	where
 		enemyColor = Player.color enemy
 
-fitness :: Fractional a => Move -> [(a, Move -> Player -> a)]-> Player -> a
+fitness :: Fractional a => Move -> [(a, Move -> Player -> a)] -> Player -> a
 fitness move chromosome enemy = sum weightedValues
 	where
 		(coefficients, functions) = unzip chromosome

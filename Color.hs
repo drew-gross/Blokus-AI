@@ -14,8 +14,8 @@ colorYellow = "\ESC[0;33m"
 colorBlue =   "\ESC[0;34m"
 
 instance Display Color where
-	display Red    = colorRed ++ "R" ++ colorBlack
-	display Green  = colorGreen ++ "G" ++ colorBlack
-	display Yellow = colorYellow ++ "Y" ++ colorBlack
-	display Blue   = colorBlue ++ "B" ++ colorBlack
+	display Red    = colorRed ++ "█" ++ colorBlack
+	display Green  = colorGreen ++ "█" ++ colorBlack
+	display Yellow = colorYellow ++ "█" ++ colorBlack
+	display Blue   = colorBlue ++ "█" ++ colorBlack
 	display Empty  = "."
