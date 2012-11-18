@@ -1,7 +1,11 @@
 module Move(
 	Move(Move, piece, position),
 	newHuman,
-	newComputer
+	newComputer,
+
+	squaresUsed,
+	launchPointsGained,
+	enemyLaunchPointsLost
 ) where
 
 import Control.Applicative
@@ -20,13 +24,11 @@ import Color
 
 data Move = Move {piece :: Piece, board :: Board, position :: Point}
 
-chromosome = [(1.0, squaresUsed),(1.0, launchPointsGained),(1.0, enemyLaunchPointsLost)]
-
 newHuman :: Color -> Player
 newHuman color = Player (startingPieces color) color completeUserTurn
 
-newComputer :: Color -> Player
-newComputer color = Player (startingPieces color) color $ completeAiTurn chromosome
+newComputer :: (Fractional a, Ord a) => Color -> [(a, Move -> Player -> a)]-> Player
+newComputer color chromosome = Player (startingPieces color) color $ completeAiTurn chromosome
 
 squaresUsed :: Fractional a => Move -> Player -> a
 squaresUsed (Move piece _ _) _ = fromIntegral $ filledPointsCount piece
