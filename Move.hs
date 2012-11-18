@@ -36,20 +36,20 @@ coefficient3 :: Fractional a => a
 coefficient3 = 1.0
 
 squaresUsed :: Fractional a => Move -> Player -> a
-squaresUsed (Move piece _ _) _ = coefficient1 * (fromIntegral $ filledPointsCount piece)
+squaresUsed (Move piece _ _) _ = fromIntegral $ filledPointsCount piece
 
 launchPointsGained :: Fractional a => Move -> Player -> a
-launchPointsGained move@(Move piece board _) _ = coefficient2 * (fromIntegral ((numOfLaunchPointsForColor (apply move) color) - (numOfLaunchPointsForColor board color)))
+launchPointsGained move@(Move piece board _) _ = fromIntegral $ numOfLaunchPointsForColor (apply move) color - numOfLaunchPointsForColor board color
 	where
 		color = Piece.color piece
 
 enemyLaunchPointsLost :: Fractional a => Move -> Player -> a
-enemyLaunchPointsLost move@(Move piece board _) enemy = coefficient3 * (fromIntegral ((numOfLaunchPointsForColor board enemyColor) - numOfLaunchPointsForColor (apply move) enemyColor))
+enemyLaunchPointsLost move@(Move piece board _) enemy = fromIntegral $ numOfLaunchPointsForColor board enemyColor - numOfLaunchPointsForColor (apply move) enemyColor
 	where
 		enemyColor = Player.color enemy
 
 fitness :: Fractional a => Move -> Player -> a
-fitness move enemy = squaresUsed move enemy + launchPointsGained move enemy + enemyLaunchPointsLost move enemy
+fitness move enemy = coefficient1 * squaresUsed move enemy + coefficient2 * launchPointsGained move enemy + coefficient3 * enemyLaunchPointsLost move enemy
 
 candidateMovesForPieceRotation :: Board -> Piece -> [Move]
 candidateMovesForPieceRotation board@(Board boardGrid _) piece@(Piece pieceGrid identifier) = let
