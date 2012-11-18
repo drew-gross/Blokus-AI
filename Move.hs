@@ -20,11 +20,13 @@ import Color
 
 data Move = Move {piece :: Piece, board :: Board, position :: Point}
 
+chromosome = [(1.0, squaresUsed),(1.0, launchPointsGained),(1.0, enemyLaunchPointsLost)]
+
 newHuman :: Color -> Player
 newHuman color = Player (startingPieces color) color completeUserTurn
 
 newComputer :: Color -> Player
-newComputer color = Player (startingPieces color) color completeAiTurn
+newComputer color = Player (startingPieces color) color $ completeAiTurn chromosome
 
 squaresUsed :: Fractional a => Move -> Player -> a
 squaresUsed (Move piece _ _) _ = fromIntegral $ filledPointsCount piece
@@ -91,21 +93,17 @@ apply (Move piece board position) = modifiedBoard
 validMovesForPlayer :: Player -> Board -> [Move]
 validMovesForPlayer (Player pieces _ _) board = concat $ validMovesForPiece board <$> pieces
 
-chromosome = [(1.0, squaresUsed),(1.0, launchPointsGained),(1.0, enemyLaunchPointsLost)]
-
-aiSelectedMove :: Player -> Board -> Player -> Maybe Move
-aiSelectedMove player board enemy = maybeHead $ reverse $ sortBy (compare `on` fitness' enemy chromosome) $ validMovesForPlayer player board
+aiSelectedMove :: (Ord a, Fractional a) => [(a, Move -> Player -> a)] -> Player -> Board -> Player -> Maybe Move
+aiSelectedMove chromosome player board enemy = maybeHead $ reverse $ sortBy (compare `on` fitness' enemy chromosome) $ validMovesForPlayer player board
 	where
 		fitness' :: Fractional a => Player -> [(a, Move -> Player -> a)] -> Move -> a
 		fitness' player chromosome move = fitness move chromosome player
 
-completeAiTurn :: Player -> Board -> Player -> IO (Maybe (Board, Player))
-completeAiTurn player board enemy = return $ (,) <$> updatedBoard <*> updatedPlayer
+completeAiTurn :: (Ord a, Fractional a) => [(a, Move -> Player -> a)] -> Player -> Board -> Player -> IO (Maybe (Board, Player))
+completeAiTurn chromosome player board enemy = return $ (,) <$> updatedBoard <*> updatedPlayer
 	where
-		move = aiSelectedMove player board enemy
-		updatedBoard :: Maybe Board
+		move = aiSelectedMove chromosome player board enemy
 		updatedBoard = apply <$> move
-		updatedPlayer :: Maybe Player
 		updatedPlayer = removePiece player <$> piece <$> move
 
 isInBounds :: Move -> Bool
