@@ -48,8 +48,12 @@ enemyLaunchPointsLost move@(Move piece board _) enemy = fromIntegral $ numOfLaun
 	where
 		enemyColor = Player.color enemy
 
-fitness :: Fractional a => Move -> Player -> a
-fitness move enemy = coefficient1 * squaresUsed move enemy + coefficient2 * launchPointsGained move enemy + coefficient3 * enemyLaunchPointsLost move enemy
+fitness :: Fractional a => Move -> [(a, Move -> Player -> a)]-> Player -> a
+fitness move chromosome enemy = sum weightedValues
+	where
+		(coefficients, functions) = unzip chromosome
+		values = ($ enemy) <$> ($ move) <$> functions
+		weightedValues = zipWith (*) coefficients values
 
 candidateMovesForPieceRotation :: Board -> Piece -> [Move]
 candidateMovesForPieceRotation board@(Board boardGrid _) piece@(Piece pieceGrid identifier) = let
@@ -96,11 +100,13 @@ apply (Move piece board position) = modifiedBoard
 validMovesForPlayer :: Player -> Board -> [Move]
 validMovesForPlayer (Player pieces _ _) board = concat $ validMovesForPiece board <$> pieces
 
+chromosome = [(1.0, squaresUsed),(1.0, launchPointsGained),(1.0, enemyLaunchPointsLost)]
+
 aiSelectedMove :: Player -> Board -> Player -> Maybe Move
-aiSelectedMove player board enemy = maybeHead $ reverse $ sortBy (compare `on` fitness' enemy) $ validMovesForPlayer player board
+aiSelectedMove player board enemy = maybeHead $ reverse $ sortBy (compare `on` fitness' enemy chromosome) $ validMovesForPlayer player board
 	where
-		fitness' :: Fractional a => Player -> Move -> a
-		fitness' = flip fitness
+		fitness' :: Fractional a => Player -> [(a, Move -> Player -> a)] -> Move -> a
+		fitness' player chromosome move = fitness move chromosome player
 
 completeAiTurn :: Player -> Board -> Player -> IO (Maybe (Board, Player))
 completeAiTurn player board enemy = return $ (,) <$> updatedBoard <*> updatedPlayer
