@@ -80,10 +80,10 @@ unsafeItemAt grid point
 	where item = itemAt grid point
 
 itemAt :: Grid t -> Point -> Maybe t
-itemAt grid@(Grid array _ _) point
-	| not $ containsPoint grid point = Nothing
-	| otherwise = array !? itemIndex grid point
-
+itemAt grid@(Grid array _ _) point@(Point x y)
+	| containsPoint grid point = array !? itemIndex grid point
+	| otherwise = Nothing
+	
 changeItemAt :: Grid t -> t -> Point -> Grid t
 changeItemAt grid@(Grid array width height) newItem point = Grid (fromList newList) width height
 	where
