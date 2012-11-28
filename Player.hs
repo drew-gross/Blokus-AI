@@ -80,7 +80,7 @@ getRotatedPiece player board = do
 	fromMaybe (getRotatedPiece player board) $ return <$> maybeRotatedPiece
 
 displayForPlayer :: Player -> Board -> String
-displayForPlayer (Player _ color _) board@(Board grid sp) = unlines $ concat splitChars
+displayForPlayer (Player _ color _) board@(Board grid _) = unlines $ concat splitChars
 	where
 		strings = displayString board color <$> (range origin $ maxPoint grid)
 		splitChars = chunksOf (width grid) strings 
@@ -89,7 +89,7 @@ displayToUserForPlayer :: Player -> Board -> String
 displayToUserForPlayer player board = (++) " 12345678901234\n" $ unlines $ zipWith (++) (show <$> repeatedSingleDigits) (lines $ displayForPlayer player board)
 
 doTurn :: Player -> Board -> Player -> IO (Maybe (Board, Player))
-doTurn player = completeMove player player
+doTurn player@(Player _ _ completeMove) = completeMove player
 
 squaresRemaining :: Player -> Int
 squaresRemaining (Player pieces _ _)= sum $ filledPointsCount <$> pieces
