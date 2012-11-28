@@ -56,7 +56,7 @@ candidateMovesForPieceRotation board@(Board boardGrid _) piece@(Piece pieceGrid 
 	in Move piece board <$> range origin maxPlacementPoint
 
 validMovesForPieceRotation :: Board -> Piece -> [Move]
-validMovesForPieceRotation board piece = filter isValid $ candidateMovesForPieceRotation board piece
+validMovesForPieceRotation board = (filter isValid) . (candidateMovesForPieceRotation board)
 
 validMovesForPiece :: Board -> Piece -> [Move]
 validMovesForPiece board piece = concat $ validMovesForPieceRotation board <$> rotations piece

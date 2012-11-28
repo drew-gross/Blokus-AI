@@ -31,7 +31,7 @@ empty2PlayerBoard :: Board
 empty2PlayerBoard = Board (makeEmptyGrid defaultSize defaultSize Empty) defaultStartPoints
 
 colorAt :: Board -> Point -> Maybe Color
-colorAt (Board grid _) point = itemAt grid point
+colorAt (Board grid _) = itemAt grid
 
 unsafeColorAt :: Board -> Point -> Color
 unsafeColorAt (Board grid _) point

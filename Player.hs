@@ -89,10 +89,10 @@ displayToUserForPlayer :: Player -> Board -> String
 displayToUserForPlayer player board = (++) " 12345678901234\n" $ unlines $ zipWith (++) (show <$> repeatedSingleDigits) (lines $ displayForPlayer player board)
 
 doTurn :: Player -> Board -> Player -> IO (Maybe (Board, Player))
-doTurn player board enemy = completeMove player player board enemy
+doTurn player = completeMove player player
 
 squaresRemaining :: Player -> Int
 squaresRemaining (Player pieces _ _)= sum $ filledPointsCount <$> pieces
 
 winner :: [Player] -> Player
-winner players = head $ sortBy (compare `on` squaresRemaining) players
+winner = head . sortBy (compare `on` squaresRemaining)

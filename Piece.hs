@@ -25,7 +25,7 @@ instance Eq Piece where
 	(/=) left right = not $ left == right
 
 color :: Piece -> Color
-color (Piece grid _) = Grid.color grid
+color = Grid.color . Piece.grid
 
 pieceWithID = flip Piece
 

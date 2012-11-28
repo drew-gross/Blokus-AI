@@ -56,7 +56,7 @@ maxPoint :: Grid t -> Point
 maxPoint grid = Point ((width grid) - 1) ((height grid) - 1)
 
 allPoints :: Grid t -> [Point]
-allPoints grid = range origin (maxPoint grid)
+allPoints = (range origin) . maxPoint
 
 containsPoint :: Grid t -> Point -> Bool
 containsPoint grid (Point x y)
@@ -80,7 +80,7 @@ unsafeItemAt grid point
 	where item = itemAt grid point
 
 itemAt :: Grid t -> Point -> Maybe t
-itemAt grid@(Grid array _ _) point@(Point x y)
+itemAt grid@(Grid array _ _) point
 	| containsPoint grid point = array !? itemIndex grid point
 	| otherwise = Nothing
 	
