@@ -17,26 +17,26 @@ import Board
 import Grid
 import Point
 
-data Gene = Gene {weight :: Double, function :: Move -> Player -> Double}
+data Gene = Gene {weight :: Double, function :: Board -> Player -> Move -> Double}
 
-valueForMove :: Gene -> Player -> Move -> Double
-valueForMove (Gene weight function) enemy move = function move enemy * weight
+valueForMove :: Gene -> Board -> Player -> Move -> Double
+valueForMove (Gene weight function) board enemy move = function board enemy move * weight
 
-squaresUsed :: Fractional a => Move -> Player -> a
-squaresUsed (Move piece _ _) _ = fromIntegral $ length $ filledPoints piece
+squaresUsed :: Fractional a => Board -> Player -> Move -> a
+squaresUsed _ _ (Move piece _) = fromIntegral $ length $ filledPoints piece
 
-launchPointsGained :: Fractional a => Move -> Player -> a
-launchPointsGained move@(Move piece board _) _ = fromIntegral $ numOfLaunchPointsForColor (apply move) color - numOfLaunchPointsForColor board color
+launchPointsGained :: Fractional a => Board -> Player -> Move -> a
+launchPointsGained board _ move@(Move piece _) = fromIntegral $ numOfLaunchPointsForColor (applyMove board move) color - numOfLaunchPointsForColor board color
 	where
 		color = Piece.color piece
 
-enemyLaunchPointsLost :: Fractional a => Move -> Player -> a
-enemyLaunchPointsLost move@(Move piece board _) enemy = fromIntegral $ numOfLaunchPointsForColor board enemyColor - numOfLaunchPointsForColor (apply move) enemyColor
+enemyLaunchPointsLost :: Fractional a => Board -> Player -> Move -> a
+enemyLaunchPointsLost board enemy move@(Move piece _) = fromIntegral $ numOfLaunchPointsForColor board enemyColor - numOfLaunchPointsForColor (applyMove board move) enemyColor
 	where
 		enemyColor = Player.color enemy
 
-rubikDistanceToCenter :: Fractional a => Move -> Player -> a
-rubikDistanceToCenter move@(Move piece board position) _ = fromIntegral $ foldr (min) 100 rubikDistances --100 chosen arbitrarily, its larger than any board out there
+rubikDistanceToCenter :: Fractional a => Board -> Player -> Move -> a
+rubikDistanceToCenter board _ move@(Move piece position) = fromIntegral $ foldr (min) 100 rubikDistances --100 chosen arbitrarily, its larger than any board out there
 	where
 		centerInter = centerIntersection $ Board.grid board
 		points = filledPointsOnBoard move
@@ -49,12 +49,12 @@ instance Eq Chromosome where
 	(==) left right = name left == name right
 	(/=) left right = not $ left == right
 
-fitnessForMove :: Chromosome -> Player -> Move -> Double
-fitnessForMove (Chromosome genes _) enemy move = sum weightedValues
+fitnessForMove :: Chromosome -> Board -> Player -> Move -> Double
+fitnessForMove (Chromosome genes _) board enemy move = sum weightedValues
 	where
-		valueForMove' :: Player -> Move -> Gene -> Double
-		valueForMove' enemy move gene = valueForMove gene enemy move
-		weightedValues = valueForMove' enemy move <$> genes
+		valueForMove' :: Board -> Player -> Move -> Gene -> Double
+		valueForMove' board player move gene = valueForMove gene board player move
+		weightedValues = valueForMove' board enemy move <$> genes
 
 chromosomePairsToCheck = nub $ take 2 <$> permutations chromosomes
 

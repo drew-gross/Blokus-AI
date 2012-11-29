@@ -38,17 +38,6 @@ instance Eq Player where
 	(==) left right = name left == name right
 	(/=) left right = not $ left == right
 
-candidateMovesForPieceRotation :: Board -> Piece -> [Move]
-candidateMovesForPieceRotation board@(Board boardGrid _) piece@(Piece pieceGrid identifier) = let
-		maxPlacementPoint = ((maxPoint boardGrid) `minus` (maxPoint pieceGrid))
-	in Move piece board <$> range origin maxPlacementPoint
-
-validMovesForPieceRotation :: Board -> Piece -> [Move]
-validMovesForPieceRotation board = (filter isValid) . (candidateMovesForPieceRotation board)
-
-validMovesForPiece :: Board -> Piece -> [Move]
-validMovesForPiece board piece = concat $ validMovesForPieceRotation board <$> rotations piece
-
 removePiece :: Player -> Piece -> Player
 removePiece (Player pieces color doTurn name) piece = Player (pieces \\ [piece]) color doTurn name
 
@@ -100,8 +89,8 @@ getRotatedPiece player board = do
 getMove :: Player -> Board -> Player -> IO (Maybe (Move, Board, Player))
 getMove player board _ = do
 	piece <- getRotatedPiece player board
-	move <- Move <$> (return piece) <*> (return board) <*> read1IndexedPoint <$> getPoint
-	return $ Just (move, apply move, removePiece player piece)
+	move <- Move <$> (return piece) <*> read1IndexedPoint <$> getPoint
+	return $ Just (move, applyMove board move, removePiece player piece)
 
 validMoves :: Player -> Board -> [Move]
 validMoves (Player pieces _ _ _) board = concat $ validMovesForPiece board <$> pieces

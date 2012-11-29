@@ -22,7 +22,7 @@ completeAiTurn :: Chromosome -> Player -> Board -> Player -> IO (Maybe (Board, P
 completeAiTurn chromosome player board enemy = return $ (,) <$> updatedBoard <*> updatedPlayer
 	where
 		move = aiSelectedMove chromosome player board enemy
-		updatedBoard = apply <$> move
+		updatedBoard = applyMove board <$> move
 		updatedPlayer = removePiece player <$> piece <$> move
 
 completeUserTurn :: Player -> Board -> Player -> IO (Maybe (Board, Player))
@@ -32,7 +32,7 @@ completeUserTurn player board enemy = do
 		return Nothing
 	else do
 		let (move, updatedBoard, updatedPlayer) = fromJust m
-		if isValid move then do
+		if isValid board move then do
 			continue <- prompt $ displayToUserForPlayer updatedPlayer updatedBoard ++ "\n" ++ "Is this correct? (y/n): "
 			if continue == "y" then
 				return $ Just (updatedBoard, updatedPlayer)
@@ -43,7 +43,7 @@ completeUserTurn player board enemy = do
 			completeUserTurn player board enemy
 
 aiSelectedMove :: Chromosome -> Player -> Board -> Player -> Maybe Move
-aiSelectedMove chromosome player board enemy = maybeHead $ reverse $ sortBy (compare `on` fitnessForMove chromosome enemy) $ validMoves player board
+aiSelectedMove chromosome player board enemy = maybeHead $ reverse $ sortBy (compare `on` fitnessForMove chromosome board enemy) $ validMoves player board
 
 playGame :: (Board, [Player]) -> IO ()
 playGame (board, players@(player:enemy:otherPlayers)) = do

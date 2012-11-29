@@ -7,7 +7,10 @@ module Board(
 	isPointCornerToColor,
 	isPointLaunchPointForColor,
 	numOfLaunchPointsForColor,
-	displayString
+	displayString,
+	isValid,
+	applyMove,
+	validMovesForPiece
 ) where
 
 import Control.Applicative
@@ -21,6 +24,7 @@ import Point
 import Display
 import Utilities
 import Piece
+import Move
 
 data Board = Board {grid :: Grid Color, startPoints :: [Point]} deriving (Show)
 
@@ -29,6 +33,41 @@ defaultStartPoints = [Point 4 4, Point 9 9]
 
 empty2PlayerBoard :: Board
 empty2PlayerBoard = Board (makeEmptyGrid defaultSize defaultSize Empty) defaultStartPoints
+
+candidateMovesForPieceRotation :: Board -> Piece -> [Move]
+candidateMovesForPieceRotation board@(Board boardGrid _) piece@(Piece pieceGrid identifier) = Move piece <$> range origin maxPlacementPoint
+	where
+		maxPlacementPoint = ((maxPoint boardGrid) `minus` (maxPoint pieceGrid))
+
+validMovesForPieceRotation :: Board -> Piece -> [Move]
+validMovesForPieceRotation board = (filter $ isValid board) . (candidateMovesForPieceRotation board)
+
+validMovesForPiece :: Board -> Piece -> [Move]
+validMovesForPiece board piece = concat $ validMovesForPieceRotation board <$> rotations piece
+
+isInBounds :: Board -> Move -> Bool
+isInBounds (Board bgrid _) (Move (Piece grid _) position)
+	| not $ containsPoint bgrid position = False
+	| not $ containsPoint bgrid $ position `plus` (maxPoint grid) = False
+	| otherwise = True
+
+isValid :: Board -> Move -> Bool
+isValid board move@(Move piece position)
+	| not $ isInBounds board move = False --move is outside of board
+	| any (\point -> unsafeColorAt board point /= Empty) pointsOnBoard = False --move is overlapping another piece
+	| any (isPointAdjacentToColor board color) pointsOnBoard = False --side of piece is touching its own color
+	| any (isPointLaunchPointForColor board color) pointsOnBoard = True
+	| otherwise = False
+	where
+		color = Piece.color piece
+		pointsOnBoard = plus position <$> filledPoints piece
+
+applyMove :: Board -> Move -> Board
+applyMove board move@(Move piece position) = modifiedBoard 
+	where
+		modifiedBoard = foldl (changeColorAt' $ Piece.color piece) board $ filledPointsOnBoard move
+		changeColorAt' :: Color -> Board -> Point -> Board
+		changeColorAt' color board = changeColorAt board color
 
 colorAt :: Board -> Point -> Maybe Color
 colorAt (Board grid _) = itemAt grid
