@@ -5,7 +5,8 @@ module Move(
 
 	squaresUsed,
 	launchPointsGained,
-	enemyLaunchPointsLost
+	enemyLaunchPointsLost,
+	rubikDistanceToCenter
 ) where
 
 import Control.Applicative
@@ -42,6 +43,14 @@ enemyLaunchPointsLost :: Fractional a => Move -> Player -> a
 enemyLaunchPointsLost move@(Move piece board _) enemy = fromIntegral $ numOfLaunchPointsForColor board enemyColor - numOfLaunchPointsForColor (apply move) enemyColor
 	where
 		enemyColor = Player.color enemy
+
+rubikDistanceToCenter :: Fractional a => Move -> Player -> a
+rubikDistanceToCenter move@(Move piece board position) enemy = fromIntegral $ foldr (min) 100 rubikDistances --100 chosen arbitrarily, its larger than any board out there
+	where
+		centerInter = centerIntersection $ Board.grid board
+		points = filledPointsOnBoard move
+		rubikDistances :: [Int]
+		rubikDistances = (flip rubikDistanceToIntersection) centerInter <$> points
 
 fitness :: Fractional a => Move -> [(a, Move -> Player -> a)] -> Player -> a
 fitness move chromosome enemy = sum weightedValues
@@ -85,12 +94,14 @@ completeUserTurn player board enemy = do
 			completeUserTurn player board enemy
 
 apply :: Move -> Board
-apply (Move piece board position) = modifiedBoard 
+apply move@(Move piece board position) = modifiedBoard 
 	where
-		modifiedBoard = foldl (changeColorAt' $ Piece.color piece) board pointsOnBoard
-		pointsOnBoard = plus position <$> filledPoints piece
+		modifiedBoard = foldl (changeColorAt' $ Piece.color piece) board $ filledPointsOnBoard move
 		changeColorAt' :: Color -> Board -> Point -> Board
 		changeColorAt' color board = changeColorAt board color
+
+filledPointsOnBoard :: Move -> [Point]
+filledPointsOnBoard (Move piece _ position) = plus position <$> filledPoints piece
 
 validMovesForPlayer :: Player -> Board -> [Move]
 validMovesForPlayer (Player pieces _ _) board = concat $ validMovesForPiece board <$> pieces
