@@ -17,6 +17,7 @@ module Point
 
 	plus,
 	minus,
+	rubikDistanceToIntersection,
 
 	range,
 	transposeRange,
@@ -57,6 +58,22 @@ plus (Point x1 y1) (Point x2 y2) = Point (x1 + x2) (y1 + y2)
 
 minus :: Point -> Point -> Point
 minus (Point x1 y1) (Point x2 y2) = Point (x1 - x2) (y1 - y2)
+
+rubikDistanceToIntersection :: Point -> Point -> Int
+rubikDistanceToIntersection (Point pointX pointY) (Point intersectionX intersectionY) = hDist + vDist
+	where
+		hDist = if pointX < intersectionX then
+					intersectionX - pointX - 1
+				else if pointX > intersectionX then
+					pointX - intersectionX
+				else 
+					0
+		vDist = if pointY < intersectionY then
+					intersectionY - pointY - 1
+				else if pointY > intersectionY then
+					pointY - intersectionY
+				else
+					0
 
 range :: Point -> Point -> [Point]
 range (Point startX startY) (Point endX endY) = [Point x y | y <- [startY..endY], x <- [startX..endX]]
