@@ -42,7 +42,7 @@ enemyLaunchPointsLost move@(Move piece board _) enemy = fromIntegral $ numOfLaun
 		enemyColor = Player.color enemy
 
 rubikDistanceToCenter :: Fractional a => Move -> Player -> a
-rubikDistanceToCenter move@(Move piece board position) enemy = fromIntegral $ foldr (min) 100 rubikDistances --100 chosen arbitrarily, its larger than any board out there
+rubikDistanceToCenter move@(Move piece board position) _ = fromIntegral $ foldr (min) 100 rubikDistances --100 chosen arbitrarily, its larger than any board out there
 	where
 		centerInter = centerIntersection $ Board.grid board
 		points = filledPointsOnBoard move
@@ -77,7 +77,7 @@ filledPointsOnBoard :: Move -> [Point]
 filledPointsOnBoard (Move piece _ position) = plus position <$> filledPoints piece
 
 validMovesForPlayer :: Player -> Board -> [Move]
-validMovesForPlayer (Player pieces _ _) board = concat $ validMovesForPiece board <$> pieces
+validMovesForPlayer (Player pieces _ _ _) board = concat $ validMovesForPiece board <$> pieces
 
 isInBounds :: Move -> Bool
 isInBounds (Move (Piece grid _) board position)

@@ -1,5 +1,5 @@
 module Player(
-	Player(Player, color, pieces),
+	Player(Player, color, pieces, name),
 	doTurn,
 	removePiece,
 	startingPieces,
@@ -23,7 +23,7 @@ import Utilities
 import Board
 import Point
 
-data Player = Player {pieces :: [Piece], color :: Color, completeMove :: Player -> Board -> Player -> IO (Maybe (Board, Player))}
+data Player = Player {pieces :: [Piece], color :: Color, completeMove :: Player -> Board -> Player -> IO (Maybe (Board, Player)), name :: String}
 
 instance Display Player where
 	display player = let
@@ -31,8 +31,12 @@ instance Display Player where
 		pieceStrings = display <$> pieces player
 		in concat $ zipWith (++) pieceAnnotations pieceStrings
 
+instance Eq Player where
+	(==) left right = name left == name right
+	(/=) left right = not $ left == right
+
 removePiece :: Player -> Piece -> Player
-removePiece (Player pieces color doTurn) piece = Player (pieces \\ [piece]) color doTurn
+removePiece (Player pieces color doTurn name) piece = Player (pieces \\ [piece]) color doTurn name
 
 startingGrids color = 
 			 [
@@ -66,7 +70,7 @@ startingGrids color =
 startingPieces color = zipWith (Piece) (startingGrids color) $ [1..]
 
 getUnrotatedPiece :: Player -> Board -> IO Piece
-getUnrotatedPiece player@(Player pieces _ _) board = do
+getUnrotatedPiece player@(Player pieces _ _ _) board = do
 	maybePiece <- maybeIndex pieces <$> read1IndexedIndex <$> prompt promptString
 	fromMaybe (getUnrotatedPiece player board) $ return <$> maybePiece
 	where
@@ -80,7 +84,7 @@ getRotatedPiece player board = do
 	fromMaybe (getRotatedPiece player board) $ return <$> maybeRotatedPiece
 
 displayForPlayer :: Player -> Board -> String
-displayForPlayer (Player _ color _) board@(Board grid _) = unlines $ concat splitChars
+displayForPlayer (Player _ color _ _) board@(Board grid _) = unlines $ concat splitChars
 	where
 		strings = displayString board color <$> (allPoints grid)
 		splitChars = chunksOf (width grid) strings 
@@ -89,10 +93,10 @@ displayToUserForPlayer :: Player -> Board -> String
 displayToUserForPlayer player board = (++) " 12345678901234\n" $ unlines $ zipWith (++) (show <$> repeatedSingleDigits) (lines $ displayForPlayer player board)
 
 doTurn :: Player -> Board -> Player -> IO (Maybe (Board, Player))
-doTurn player@(Player _ _ completeMove) = completeMove player
+doTurn player@(Player _ _ completeMove _) = completeMove player
 
 squaresRemaining :: Player -> Int
-squaresRemaining (Player pieces _ _)= sum $ filledPointsCount <$> pieces
+squaresRemaining (Player pieces _ _ _)= sum $ filledPointsCount <$> pieces
 
 winner :: [Player] -> Player
 winner = head . sortBy (compare `on` squaresRemaining)

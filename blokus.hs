@@ -13,10 +13,10 @@ import Move
 import Chromosome
 
 newComputer :: Color -> Chromosome -> Player
-newComputer color = (Player (startingPieces color) color) . completeAiTurn
+newComputer color chromosome = Player (startingPieces color) color (completeAiTurn chromosome) $ Chromosome.name chromosome 
 
 newHuman :: Color -> Player
-newHuman color = Player (startingPieces color) color completeUserTurn
+newHuman color = Player (startingPieces color) color completeUserTurn "Human Player!"
 
 completeAiTurn :: Chromosome -> Player -> Board -> Player -> IO (Maybe (Board, Player))
 completeAiTurn chromosome player board enemy = return $ (,) <$> updatedBoard <*> updatedPlayer
@@ -49,7 +49,7 @@ playGame :: (Board, [Player]) -> IO ()
 playGame (board, players@(player:enemy:otherPlayers)) = do
 	m <- doTurn player board enemy
 	if isNothing m then do
-		putStr $ (display $ color $ winner players) ++ " wins!\n"
+		putStr $ (Player.name $ winner players) ++ " beat " ++ (Player.name (head (players \\ [winner players]))) ++ "\n"
 	else do
 		let (nextBoard, finishedPlayer) = fromJust m
 		putStr $ display $ grid nextBoard
