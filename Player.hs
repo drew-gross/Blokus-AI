@@ -5,7 +5,9 @@ module Player(
 	startingPieces,
 	getRotatedPiece,
 	displayToUserForPlayer,
-	winner
+	winner,
+	getMove,
+	validMoves
 ) where
 
 import Control.Applicative
@@ -22,6 +24,7 @@ import Piece
 import Utilities
 import Board
 import Point
+import Move
 
 data Player = Player {pieces :: [Piece], color :: Color, completeMove :: Player -> Board -> Player -> IO (Maybe (Board, Player)), name :: String}
 
@@ -34,6 +37,17 @@ instance Display Player where
 instance Eq Player where
 	(==) left right = name left == name right
 	(/=) left right = not $ left == right
+
+candidateMovesForPieceRotation :: Board -> Piece -> [Move]
+candidateMovesForPieceRotation board@(Board boardGrid _) piece@(Piece pieceGrid identifier) = let
+		maxPlacementPoint = ((maxPoint boardGrid) `minus` (maxPoint pieceGrid))
+	in Move piece board <$> range origin maxPlacementPoint
+
+validMovesForPieceRotation :: Board -> Piece -> [Move]
+validMovesForPieceRotation board = (filter isValid) . (candidateMovesForPieceRotation board)
+
+validMovesForPiece :: Board -> Piece -> [Move]
+validMovesForPiece board piece = concat $ validMovesForPieceRotation board <$> rotations piece
 
 removePiece :: Player -> Piece -> Player
 removePiece (Player pieces color doTurn name) piece = Player (pieces \\ [piece]) color doTurn name
@@ -82,6 +96,15 @@ getRotatedPiece player board = do
 	let promptString = (displayNumberedList $ rotatedPieceList) ++ "\n" ++ "Enter rotation number:"
 	maybeRotatedPiece <- maybeIndex rotatedPieceList <$> read1IndexedIndex <$> prompt promptString
 	fromMaybe (getRotatedPiece player board) $ return <$> maybeRotatedPiece
+
+getMove :: Player -> Board -> Player -> IO (Maybe (Move, Board, Player))
+getMove player board _ = do
+	piece <- getRotatedPiece player board
+	move <- Move <$> (return piece) <*> (return board) <*> read1IndexedPoint <$> getPoint
+	return $ Just (move, apply move, removePiece player piece)
+
+validMoves :: Player -> Board -> [Move]
+validMoves (Player pieces _ _ _) board = concat $ validMovesForPiece board <$> pieces
 
 displayForPlayer :: Player -> Board -> String
 displayForPlayer (Player _ color _ _) board@(Board grid _) = unlines $ concat splitChars

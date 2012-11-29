@@ -12,11 +12,36 @@ import Data.List
 
 import Player hiding (name)
 import Move
+import Piece
+import Board
+import Grid
+import Point
 
 data Gene = Gene {weight :: Double, function :: Move -> Player -> Double}
 
 valueForMove :: Gene -> Player -> Move -> Double
 valueForMove (Gene weight function) enemy move = function move enemy * weight
+
+squaresUsed :: Fractional a => Move -> Player -> a
+squaresUsed (Move piece _ _) _ = fromIntegral $ filledPointsCount piece
+
+launchPointsGained :: Fractional a => Move -> Player -> a
+launchPointsGained move@(Move piece board _) _ = fromIntegral $ numOfLaunchPointsForColor (apply move) color - numOfLaunchPointsForColor board color
+	where
+		color = Piece.color piece
+
+enemyLaunchPointsLost :: Fractional a => Move -> Player -> a
+enemyLaunchPointsLost move@(Move piece board _) enemy = fromIntegral $ numOfLaunchPointsForColor board enemyColor - numOfLaunchPointsForColor (apply move) enemyColor
+	where
+		enemyColor = Player.color enemy
+
+rubikDistanceToCenter :: Fractional a => Move -> Player -> a
+rubikDistanceToCenter move@(Move piece board position) _ = fromIntegral $ foldr (min) 100 rubikDistances --100 chosen arbitrarily, its larger than any board out there
+	where
+		centerInter = centerIntersection $ Board.grid board
+		points = filledPointsOnBoard move
+		rubikDistances :: [Int]
+		rubikDistances = (flip rubikDistanceToIntersection) centerInter <$> points
 
 data Chromosome = Chromosome {genes :: [Gene], name :: String}
 

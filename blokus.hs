@@ -43,7 +43,7 @@ completeUserTurn player board enemy = do
 			completeUserTurn player board enemy
 
 aiSelectedMove :: Chromosome -> Player -> Board -> Player -> Maybe Move
-aiSelectedMove chromosome player board enemy = maybeHead $ reverse $ sortBy (compare `on` fitnessForMove chromosome enemy) $ validMovesForPlayer player board
+aiSelectedMove chromosome player board enemy = maybeHead $ reverse $ sortBy (compare `on` fitnessForMove chromosome enemy) $ validMoves player board
 
 playGame :: (Board, [Player]) -> IO ()
 playGame (board, players@(player:enemy:otherPlayers)) = do
