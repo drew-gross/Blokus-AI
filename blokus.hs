@@ -5,6 +5,7 @@ import Player
 import Color
 import Display
 import Move
+import Chromosome
 
 neutralChromosome = [(1.0, squaresUsed),(1.0, launchPointsGained),(1.0, enemyLaunchPointsLost), (-1.0, rubikDistanceToCenter)]
 agressiveChromosome = [(1.0, squaresUsed),(1.0, launchPointsGained),(2.0, enemyLaunchPointsLost), (-1.0, rubikDistanceToCenter)]
@@ -20,5 +21,7 @@ playGame (board, players@(player:enemy:otherPlayers)) = do
 		let (nextBoard, finishedPlayer) = fromJust m
 		putStr $ display $ grid nextBoard
 		playGame (nextBoard, enemy:otherPlayers ++ [finishedPlayer])
+
+chromosomes = [neutralChromosome, agressiveChromosome, defensiveChromosome, kamikaziChromosome]
 
 main = playGame (empty2PlayerBoard, [newComputer Red kamikaziChromosome, newComputer Blue defensiveChromosome])
