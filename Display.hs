@@ -1,7 +1,6 @@
 module Display(
 	Display,
 	display,
-	printDisplay,
 	displayNumberedList,
 ) where
 
@@ -10,9 +9,6 @@ class Display a where
 
 instance (Display a) => Display [a] where
 	display list = concatMap display list ++ "\n"
-
-printDisplay :: Display a => a -> IO ()
-printDisplay = putStrLn . display
 
 displayNumberedListHelper :: Display t => [t] -> Int -> String
 displayNumberedListHelper [] _ = ""
