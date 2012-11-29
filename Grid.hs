@@ -1,5 +1,7 @@
 module Grid (
 	Grid(width, height),
+	centerIntersection,
+
 	makeEmptyGrid,
 	makeFilledGridWithList,
 
@@ -35,6 +37,12 @@ data Grid t = Grid {array :: Vector t, width :: Int, height :: Int} deriving (Sh
 
 instance Display t => Display (Grid t) where
 	display = display . rows
+
+centerIntersection :: Grid t -> Point
+centerIntersection grid 
+	| odd $ width grid = error "Only even width boards are supported"
+	| odd $ height grid = error "Only even height boards are supported"
+	| otherwise = Point (width grid `div` 2) (height grid `div` 2)
 
 makeEmptyGrid :: Int -> Int -> t -> Grid t
 makeEmptyGrid width height defaultCell = Grid (fromList $ Prelude.replicate arraySize defaultCell) width height
