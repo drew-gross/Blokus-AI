@@ -1,8 +1,9 @@
 module Move(
 	Move(Move, piece, position),
-	newHuman,
-	newComputer,
-
+	apply,
+	getMove,
+	isValid, 
+	
 	squaresUsed,
 	launchPointsGained,
 	enemyLaunchPointsLost,
@@ -24,12 +25,6 @@ import Grid
 import Color
 
 data Move = Move {piece :: Piece, board :: Board, position :: Point}
-
-newHuman :: Color -> Player
-newHuman color = Player (startingPieces color) color completeUserTurn
-
-newComputer :: (Fractional a, Ord a) => Color -> [(a, Move -> Player -> a)]-> Player
-newComputer color chromosome = Player (startingPieces color) color $ completeAiTurn chromosome
 
 squaresUsed :: Fractional a => Move -> Player -> a
 squaresUsed (Move piece _ _) _ = fromIntegral $ filledPointsCount piece
@@ -76,23 +71,6 @@ getMove player board _ = do
 	move <- Move <$> (return piece) <*> (return board) <*> read1IndexedPoint <$> getPoint
 	return $ Just (move, apply move, removePiece player piece)
 
-completeUserTurn :: Player -> Board -> Player -> IO (Maybe (Board, Player))
-completeUserTurn player board enemy = do
-	m <- getMove player board enemy
-	if isNothing m then
-		return Nothing
-	else do
-		let (move, updatedBoard, updatedPlayer) = fromJust m
-		if isValid move then do
-			continue <- prompt $ displayToUserForPlayer updatedPlayer updatedBoard ++ "\n" ++ "Is this correct? (y/n): "
-			if continue == "y" then
-				return $ Just (updatedBoard, updatedPlayer)
-			else
-				completeUserTurn player board enemy
-		else do
-			putStr "Invalid Move!\n"
-			completeUserTurn player board enemy
-
 apply :: Move -> Board
 apply move@(Move piece board position) = modifiedBoard 
 	where
@@ -105,19 +83,6 @@ filledPointsOnBoard (Move piece _ position) = plus position <$> filledPoints pie
 
 validMovesForPlayer :: Player -> Board -> [Move]
 validMovesForPlayer (Player pieces _ _) board = concat $ validMovesForPiece board <$> pieces
-
-aiSelectedMove :: (Ord a, Fractional a) => [(a, Move -> Player -> a)] -> Player -> Board -> Player -> Maybe Move
-aiSelectedMove chromosome player board enemy = maybeHead $ reverse $ sortBy (compare `on` fitness' enemy chromosome) $ validMovesForPlayer player board
-	where
-		fitness' :: Fractional a => Player -> [(a, Move -> Player -> a)] -> Move -> a
-		fitness' player chromosome move = fitness move chromosome player
-
-completeAiTurn :: (Ord a, Fractional a) => [(a, Move -> Player -> a)] -> Player -> Board -> Player -> IO (Maybe (Board, Player))
-completeAiTurn chromosome player board enemy = return $ (,) <$> updatedBoard <*> updatedPlayer
-	where
-		move = aiSelectedMove chromosome player board enemy
-		updatedBoard = apply <$> move
-		updatedPlayer = removePiece player <$> piece <$> move
 
 isInBounds :: Move -> Bool
 isInBounds (Move (Piece grid _) board position)

@@ -82,7 +82,7 @@ getRotatedPiece player board = do
 displayForPlayer :: Player -> Board -> String
 displayForPlayer (Player _ color _) board@(Board grid _) = unlines $ concat splitChars
 	where
-		strings = displayString board color <$> (range origin $ maxPoint grid)
+		strings = displayString board color <$> (allPoints grid)
 		splitChars = chunksOf (width grid) strings 
 
 displayToUserForPlayer :: Player -> Board -> String

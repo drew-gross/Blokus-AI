@@ -117,7 +117,7 @@ changeGridAt oldGrid@(Grid oldArray _ _) newGrid@(Grid newArray _ _) point
 flipAboutVertical :: Grid t -> Grid t
 flipAboutVertical grid@(Grid _ width height) = Grid newArray width height
 	where
-		newArray = fromList [unsafeItemAt grid $ Point (width - x - 1) y | Point x y <- range origin $ maxPoint grid]
+		newArray = fromList [unsafeItemAt grid $ Point (width - x - 1) y | Point x y <- allPoints grid]
 
 color :: Grid Color -> Color
 color (Grid array _ _) = Data.Vector.head $ Data.Vector.filter (/= Empty) array
