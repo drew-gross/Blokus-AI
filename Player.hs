@@ -119,7 +119,7 @@ doTurn :: Player -> Board -> Player -> IO (Maybe (Board, Player))
 doTurn player@(Player _ _ completeMove _) = completeMove player
 
 squaresRemaining :: Player -> Int
-squaresRemaining (Player pieces _ _ _)= sum $ filledPointsCount <$> pieces
+squaresRemaining (Player pieces _ _ _)= sum $ length <$> filledPoints <$> pieces
 
 winner :: [Player] -> Player
 winner = head . sortBy (compare `on` squaresRemaining)

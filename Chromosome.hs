@@ -23,7 +23,7 @@ valueForMove :: Gene -> Player -> Move -> Double
 valueForMove (Gene weight function) enemy move = function move enemy * weight
 
 squaresUsed :: Fractional a => Move -> Player -> a
-squaresUsed (Move piece _ _) _ = fromIntegral $ filledPointsCount piece
+squaresUsed (Move piece _ _) _ = fromIntegral $ length $ filledPoints piece
 
 launchPointsGained :: Fractional a => Move -> Player -> a
 launchPointsGained move@(Move piece board _) _ = fromIntegral $ numOfLaunchPointsForColor (apply move) color - numOfLaunchPointsForColor board color

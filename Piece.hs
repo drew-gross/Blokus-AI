@@ -3,7 +3,6 @@ module Piece(
 	rotations,
 	Piece.color,
 	filledPoints,
-	filledPointsCount
 ) where
 
 import Control.Applicative
@@ -42,6 +41,3 @@ rotations (Piece grid identifier) = pieceWithID identifier <$> (nub $ ($ grid) <
 
 filledPoints :: Piece -> [Point]
 filledPoints (Piece grid _) = filter (\point -> unsafeItemAt grid point /= Empty) (allPoints grid)
-
-filledPointsCount :: Piece -> Int
-filledPointsCount = length . filledPoints
