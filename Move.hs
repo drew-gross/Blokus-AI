@@ -3,7 +3,9 @@ module Move(
 	apply,
 	getMove,
 	isValid, 
-	
+
+	validMovesForPlayer,
+
 	squaresUsed,
 	launchPointsGained,
 	enemyLaunchPointsLost,
@@ -46,13 +48,6 @@ rubikDistanceToCenter move@(Move piece board position) enemy = fromIntegral $ fo
 		points = filledPointsOnBoard move
 		rubikDistances :: [Int]
 		rubikDistances = (flip rubikDistanceToIntersection) centerInter <$> points
-
-fitness :: Fractional a => Move -> [(a, Move -> Player -> a)] -> Player -> a
-fitness move chromosome enemy = sum weightedValues
-	where
-		(coefficients, functions) = unzip chromosome
-		values = ($ enemy) <$> ($ move) <$> functions
-		weightedValues = zipWith (*) coefficients values
 
 candidateMovesForPieceRotation :: Board -> Piece -> [Move]
 candidateMovesForPieceRotation board@(Board boardGrid _) piece@(Piece pieceGrid identifier) = let
