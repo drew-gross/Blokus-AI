@@ -13,7 +13,7 @@ import Move
 import Chromosome
 
 newComputer :: Color -> Chromosome -> Player
-newComputer color chromosome = Player (startingPieces color) color $ completeAiTurn chromosome
+newComputer color = (Player (startingPieces color) color) . completeAiTurn
 
 newHuman :: Color -> Player
 newHuman color = Player (startingPieces color) color completeUserTurn
