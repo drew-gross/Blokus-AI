@@ -96,13 +96,18 @@ validMoves :: Player -> Board -> [Move]
 validMoves (Player pieces _ _ _) board = concat $ validMovesForPiece board <$> pieces
 
 displayForPlayer :: Player -> Board -> String
-displayForPlayer (Player _ color _ _) board@(Board grid sp) = unlines splitChars
+displayForPlayer (Player _ color _ _) board@(Board grid _) = unlines splitChars
 	where
-		strings = map (displayString board color) (range origin $ maxPoint grid)
+		pointRows = chunksOf (width grid) (range origin $ maxPoint grid)
+		strings = concatMap (displayString board color) <$> pointRows
 		splitChars = concat $ chunksOf (width grid) strings 
 
 displayToUserForPlayer :: Player -> Board -> String
-displayToUserForPlayer player board = (++) " 12345678901234\n" $ unlines $ zipWith (++) (show <$> repeatedSingleDigits) (lines $ displayForPlayer player board)
+displayToUserForPlayer player board = header ++ annotatedBoardString
+	where
+		header = " 12345678901234\n"
+		boardString = displayForPlayer player board
+		annotatedBoardString = unlines $ zipWith (++) (show <$> repeatedSingleDigits) (lines $ boardString)
 
 doTurn :: Player -> Board -> Player -> IO (Maybe (Board, Player))
 doTurn player@(Player _ _ completeMove _) = completeMove player
