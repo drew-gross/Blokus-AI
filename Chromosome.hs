@@ -19,8 +19,8 @@ import Point
 
 data Gene = Gene {weight :: Double, function :: Board -> Player -> Move -> Double}
 
-valueForMove :: Gene -> Board -> Player -> Move -> Double
-valueForMove (Gene weight function) board enemy move = function board enemy move * weight
+valueForMove :: Board -> Player -> Move -> Gene -> Double
+valueForMove board enemy move (Gene weight function) = function board enemy move * weight
 
 squaresUsed :: Fractional a => Board -> Player -> Move -> a
 squaresUsed _ _ (Move piece _) = fromIntegral $ length $ filledPoints piece
@@ -50,11 +50,7 @@ instance Eq Chromosome where
 	(/=) left right = not $ left == right
 
 fitnessForMove :: Chromosome -> Board -> Player -> Move -> Double
-fitnessForMove (Chromosome genes _) board enemy move = sum weightedValues
-	where
-		valueForMove' :: Board -> Player -> Move -> Gene -> Double
-		valueForMove' board player move gene = valueForMove gene board player move
-		weightedValues = valueForMove' board enemy move <$> genes
+fitnessForMove (Chromosome genes _) board enemy move = sum $ valueForMove board enemy move <$> genes
 
 chromosomePairsToCheck = nub $ take 2 <$> permutations chromosomes
 

@@ -55,4 +55,4 @@ playGame (board, players@(player:enemy:otherPlayers)) = do
 		putStr $ display $ grid nextBoard
 		playGame (nextBoard, enemy:otherPlayers ++ [finishedPlayer])
 
-main = playGame (empty2PlayerBoard, [newHuman Red, newComputer Blue (chromosomes !! 1)])
+main = playGame (empty2PlayerBoard, [newComputer Red (chromosomes !! 0), newComputer Blue (chromosomes !! 1)])
