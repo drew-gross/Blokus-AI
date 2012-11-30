@@ -55,4 +55,17 @@ playGame (board, players@(player:enemy:otherPlayers)) = do
 		putStr $ display $ grid nextBoard
 		playGame (nextBoard, enemy:otherPlayers ++ [finishedPlayer])
 
-main = playGame (empty2PlayerBoard, [newComputer Red (chromosomes !! 0), newComputer Blue (chromosomes !! 1)])
+playTournament :: (Board, [[Player]]) -> IO ()
+playTournament (board, []) = return ()
+playTournament (board, pair:pairs) = do
+	playGame (board, pair)
+	playTournament (board, pairs)
+	return ()
+
+playerPair :: [Chromosome] -> [Player]
+playerPair chromosomePair = [newComputer Red $ chromosomePair !! 0, newComputer Blue $ chromosomePair !! 1]
+
+chromosomePairs :: [[Chromosome]]
+chromosomePairs = nub $ take 2 <$> permutations chromosomes
+
+main = playTournament (empty2PlayerBoard, playerPair <$> chromosomePairs)

@@ -34,6 +34,9 @@ instance Display Player where
 		pieceStrings = display <$> pieces player
 		in concat $ zipWith (++) pieceAnnotations pieceStrings
 
+instance Show Player where
+	show = name
+
 instance Eq Player where
 	(==) left right = name left == name right
 	(/=) left right = not $ left == right

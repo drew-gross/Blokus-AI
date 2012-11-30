@@ -1,6 +1,5 @@
 module Chromosome (
 	Chromosome(name),
-	chromosomePairsToCheck,
 	chromosomes,
 
 	fitnessForMove
@@ -45,14 +44,15 @@ rubikDistanceToCenter board _ move@(Move piece position) = fromIntegral $ foldr 
 
 data Chromosome = Chromosome {genes :: [Gene], name :: String}
 
+instance Show Chromosome where
+	show = name
+
 instance Eq Chromosome where
 	(==) left right = name left == name right
 	(/=) left right = not $ left == right
 
 fitnessForMove :: Chromosome -> Board -> Player -> Move -> Double
 fitnessForMove (Chromosome genes _) board enemy move = sum $ valueForMove board enemy move <$> genes
-
-chromosomePairsToCheck = nub $ take 2 <$> permutations chromosomes
 
 chromosomes = [
 				Chromosome [Gene 1.0 squaresUsed, Gene 1.0 launchPointsGained, Gene 1.0 enemyLaunchPointsLost, Gene (-1.0) rubikDistanceToCenter] "neutral",
