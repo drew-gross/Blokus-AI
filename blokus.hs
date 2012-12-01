@@ -45,20 +45,24 @@ completeUserTurn player board enemy = do
 aiSelectedMove :: Chromosome -> Player -> Board -> Player -> Maybe Move
 aiSelectedMove chromosome player board enemy = maybeHead $ reverse $ sortBy (compare `on` fitnessForMove chromosome board enemy) $ validMoves player board
 
-playGame :: (Board, [Player]) -> IO ()
-playGame (board, players@(player:enemy:otherPlayers)) = do
-	m <- doTurn player board enemy
-	if isNothing m then do
-		putStr $ (Player.name $ winner players) ++ " beat " ++ (Player.name (head (players \\ [winner players]))) ++ "\n"
-	else do
-		let (nextBoard, finishedPlayer) = fromJust m
-		putStr $ display $ grid nextBoard
-		playGame (nextBoard, enemy:otherPlayers ++ [finishedPlayer])
+playGame :: (Board, [Player]) -> Bool -> IO ()
+playGame (board, players@(player:enemy:otherPlayers)) isGameOver
+	| length players /= 2 = error "Only 2 player games are supported for now"
+	| otherwise = do
+		m <- doTurn player board enemy
+		if isNothing m && isGameOver then do
+			putStr $ (Player.name $ winner players) ++ " beat " ++ (Player.name (head (players \\ [winner players]))) ++ "\n"
+		else if isNothing m then 
+			playGame (board, enemy:otherPlayers ++ [player]) True --current player can't move, put them on the back of the stack and let next player go
+		else do
+			let (nextBoard, finishedPlayer) = fromJust m
+			putStr $ display $ grid nextBoard
+			playGame (nextBoard, enemy:otherPlayers ++ [finishedPlayer]) False
 
 playTournament :: (Board, [[Player]]) -> IO ()
 playTournament (board, []) = return ()
 playTournament (board, pair:pairs) = do
-	playGame (board, pair)
+	playGame (board, pair) False
 	playTournament (board, pairs)
 	return ()
 
