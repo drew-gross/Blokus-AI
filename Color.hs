@@ -1,6 +1,7 @@
 module Color
 (
-	Color(Yellow, Red, Green, Blue, Empty)
+	Color(Yellow, Red, Green, Blue, Empty),
+	coloredString
 ) where
 
 import Display

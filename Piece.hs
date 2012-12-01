@@ -40,4 +40,4 @@ rotations (Piece grid identifier) = pieceWithID identifier <$> (nub $ ($ grid) <
 											 			  flipAboutVertical . rotate270])	
 
 filledPoints :: Piece -> [Point]
-filledPoints (Piece grid _) = filter (\point -> unsafeItemAt grid point /= Empty) (allPoints grid)
+filledPoints (Piece grid _) = filter (\point -> unsafeItemAt grid point /= Empty) $ allPoints grid
