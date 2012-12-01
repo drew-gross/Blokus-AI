@@ -15,7 +15,8 @@ colorYellow = "\ESC[0;33m"
 colorBlue =   "\ESC[0;34m"
 
 instance Display Color where
-	display = coloredString "█"
+	display Empty = "."
+	display color = coloredString "█" color
 
 coloredString :: String -> Color -> String
 coloredString string Red = colorRed ++ string ++ colorBlack

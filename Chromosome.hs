@@ -1,8 +1,14 @@
 module Chromosome (
-	Chromosome(name),
+	Chromosome(Chromosome, name),
+	Gene(Gene),
 	chromosomes,
 
-	fitnessForMove
+	fitnessForMove,
+
+	squaresUsed,
+	launchPointsGained,
+	enemyLaunchPointsLost,
+	rubikDistanceToCenter
 ) where
 
 import Control.Applicative

@@ -5,6 +5,7 @@ module Utilities(
 
 	prompt,
 	read1IndexedIndex,
+	combinationsOfLength
 ) where
 
 import System.IO
@@ -29,3 +30,8 @@ prompt text = do
 
 read1IndexedIndex :: String -> Int
 read1IndexedIndex = (flip (-) 1) . read
+
+combinationsOfLength :: Int -> a -> a -> [[a]]
+combinationsOfLength 0 _ _ = []
+combinationsOfLength 1 val1 val2 = [[val1], [val2]]
+combinationsOfLength len val1 val2 = map (val1 :) (combinationsOfLength (len - 1) val1 val2) ++ map (val2 :) (combinationsOfLength (len - 1) val1 val2)
