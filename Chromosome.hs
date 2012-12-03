@@ -24,6 +24,9 @@ import Point
 
 data Gene = Gene {weight :: Double, function :: Board -> Player -> Move -> Double}
 
+makeGenes :: [Double] -> [(Board -> Player -> Move -> Double)] -> [Gene]
+makeGenes weights functions = Gene <$> weights <*> functions
+
 valueForMove :: Board -> Player -> Move -> Gene -> Double
 valueForMove board enemy move (Gene weight function) = function board enemy move * weight
 
@@ -57,8 +60,15 @@ instance Eq Chromosome where
 	(==) left right = name left == name right
 	(/=) left right = not $ left == right
 
+makeChromosomes :: [[Double]] -> [(Board -> Player -> Move -> Double)] -> [Chromosome] 
+makeChromosomes [] _ = []
+makeChromosomes [weights] functions = [Chromosome (makeGenes weights functions) $ show weights]
+makeChromosomes (firstWeights:otherWeights) functions = makeChromosomes [firstWeights] functions ++ makeChromosomes otherWeights functions
+
 fitnessForMove :: Chromosome -> Board -> Player -> Move -> Double
 fitnessForMove (Chromosome genes _) board enemy move = sum $ valueForMove board enemy move <$> genes
+
+functions = [squaresUsed, launchPointsGained, enemyLaunchPointsLost, rubikDistanceToCenter]
 
 chromosomes = [
 				Chromosome [Gene 1.0 squaresUsed, Gene 1.0 launchPointsGained, Gene 1.0 enemyLaunchPointsLost, Gene (-1.0) rubikDistanceToCenter] "neutral",
