@@ -48,7 +48,7 @@ enemyLaunchPointsLost board enemy move@(Move piece _) = fromIntegral $ enemyLaun
 		enemyLaunchPointsNow = numOfLaunchPointsForColor board enemyColor
 
 rubikDistanceToCenter :: Fractional a => Board -> Player -> Move -> a
-rubikDistanceToCenter board _ move@(Move piece position) = fromIntegral $ foldr (min) 100 rubikDistances --100 chosen arbitrarily, its larger than any board out there
+rubikDistanceToCenter board _ move@(Move piece position) = fromIntegral $ foldr (min) 100 rubikDistances --TODO: 100 chosen arbitrarily, its larger than any board out there
 	where
 		centerInter = centerIntersection $ Board.grid board
 		points = filledPointsOnBoard move
@@ -73,5 +73,5 @@ fitnessForMove :: Chromosome -> Board -> Player -> Move -> Double
 fitnessForMove (Chromosome genes _) board enemy move = sum $ valueForMove board enemy move <$> genes
 
 functions = [squaresUsed, launchPointsGained, enemyLaunchPointsLost, rubikDistanceToCenter]
-weights = combinationsOfLength 4 1.0 (-1.0)
-chromosomes = makeChromosomes weights functions
+weights = combinationsOfLength 4 [1.0, (-1.0)]
+chromosomes = reverse $ makeChromosomes weights functions

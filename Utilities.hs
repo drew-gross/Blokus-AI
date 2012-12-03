@@ -11,6 +11,7 @@ module Utilities(
 ) where
 
 import System.IO
+import Control.Applicative
 
 repeatedSingleDigits = concat $ repeat $ [1..9] ++ [0]
 
@@ -38,7 +39,14 @@ prompt text = do
 read1IndexedIndex :: String -> Int
 read1IndexedIndex = (flip (-) 1) . read
 
-combinationsOfLength :: Int -> a -> a -> [[a]]
-combinationsOfLength 0 _ _ = []
-combinationsOfLength 1 val1 val2 = [[val1], [val2]]
-combinationsOfLength len val1 val2 = map (val1 :) (combinationsOfLength (len - 1) val1 val2) ++ map (val2 :) (combinationsOfLength (len - 1) val1 val2)
+combinationsOfLength :: Int -> [a] -> [[a]]
+combinationsOfLength 0 _ = []
+combinationsOfLength _ [] = []
+combinationsOfLength 1 xs = (: []) <$> xs
+combinationsOfLength n xs = concat $ (prependToCombinations (n - 1) xs) <$> xs
+
+prependToCombinations :: Int -> [a] -> a -> [[a]]
+prependToCombinations n xs x = prependToLists x $ combinationsOfLength n xs
+
+prependToLists :: a -> [[a]] -> [[a]]
+prependToLists x lists = map (x :) lists
