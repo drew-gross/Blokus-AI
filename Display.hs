@@ -1,14 +1,26 @@
 module Display(
 	Display,
 	display,
+	displayColored,
 	displayNumberedList,
 ) where
 
+import Color
+
 class Display a where
 	display :: a -> String
+	displayColored :: Color -> a -> String
+	displayColored color item = coloredString (display item) color
 
 instance (Display a) => Display [a] where
 	display list = concatMap display list ++ "\n"
+
+instance Display Color where
+	display Empty = "."
+	display color = coloredString "█" color
+
+instance Display Char where
+	display char = [char]
 
 displayNumberedListHelper :: Display t => [t] -> Int -> String
 displayNumberedListHelper [] _ = ""

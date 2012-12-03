@@ -15,6 +15,7 @@ import Control.Applicative
 
 import Data.List
 
+import Utilities
 import Player hiding (name)
 import Move
 import Piece
@@ -71,6 +72,7 @@ fitnessForMove :: Chromosome -> Board -> Player -> Move -> Double
 fitnessForMove (Chromosome genes _) board enemy move = sum $ valueForMove board enemy move <$> genes
 
 functions = [squaresUsed, launchPointsGained, enemyLaunchPointsLost, rubikDistanceToCenter]
+weights = combinationsOfLength 4 1.0 (-1.0)
 
 chromosomes = [
 				Chromosome [Gene 1.0 squaresUsed, Gene 1.0 launchPointsGained, Gene 1.0 enemyLaunchPointsLost, Gene (-1.0) rubikDistanceToCenter] "neutral",

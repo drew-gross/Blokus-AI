@@ -51,7 +51,7 @@ playGame (board, players@(player:enemy:otherPlayers)) isGameOver
 	| otherwise = do
 		m <- doTurn player board enemy
 		if isNothing m && isGameOver then do
-			putStr $ (Player.name $ winner players) ++ " beat " ++ (Player.name (head (players \\ [winner players]))) ++ "\n"
+			putStr $ (displayColored (Player.color $ winner players) (Player.name $ winner players)) ++ " beat " ++ (displayColored (Player.color (head (players \\ [winner players]))) (Player.name (head (players \\ [winner players])))) ++ "\n"
 		else if isNothing m then 
 			playGame (board, enemy:otherPlayers ++ [player]) True --current player can't move, put them on the back of the stack and let next player go
 		else do
