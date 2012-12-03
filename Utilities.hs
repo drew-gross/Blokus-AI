@@ -1,7 +1,9 @@
 module Utilities(
 	repeatedSingleDigits,
+
 	maybeIndex,
 	maybeHead,
+	maybeRead,
 
 	prompt,
 	read1IndexedIndex,
@@ -21,6 +23,11 @@ maybeIndex xs index
 maybeHead :: [a] -> Maybe a
 maybeHead [] = Nothing
 maybeHead xs = Just $ head xs
+
+maybeRead :: Read a => String -> Maybe a 
+maybeRead s = case reads s of 
+	[(x, "")] -> Just x 
+	_         -> Nothing
 
 prompt :: String -> IO String
 prompt text = do
