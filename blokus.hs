@@ -51,20 +51,22 @@ playGame (board, players@(player:enemy:otherPlayers)) isGameOver
 	| otherwise = do
 		m <- doTurn player board enemy
 		if isNothing m && isGameOver then do
-			putStr $ (displayColored (Player.color $ winner players) (Player.name $ winner players)) ++ " beat " ++ (displayColored (Player.color (head (players \\ [winner players]))) (Player.name (head (players \\ [winner players])))) ++ "\n"
+			putStr $ (displayColored (Player.color winingPlayer) (Player.name winingPlayer)) ++ " beat " ++ (displayColored (Player.color losingPlayer) (Player.name losingPlayer)) ++ "\n"
 		else if isNothing m then 
 			playGame (board, enemy:otherPlayers ++ [player]) True --current player can't move, put them on the back of the stack and let next player go
 		else do
 			let (nextBoard, finishedPlayer) = fromJust m
 			putStr $ display $ grid nextBoard
 			playGame (nextBoard, enemy:otherPlayers ++ [finishedPlayer]) False
+	where
+		winingPlayer = winner players
+		losingPlayer = head (players \\ [winingPlayer])
 
 playTournament :: (Board, [[Player]]) -> IO ()
 playTournament (board, []) = return ()
 playTournament (board, pair:pairs) = do
 	playGame (board, pair) False
 	playTournament (board, pairs)
-	return ()
 
 playerPair :: [Chromosome] -> [Player]
 playerPair chromosomePair = [newComputer Red $ chromosomePair !! 0, newComputer Blue $ chromosomePair !! 1]
