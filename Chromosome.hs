@@ -22,9 +22,11 @@ import Board
 import Grid
 import Point
 
-data Gene = Gene {weight :: Double, function :: Board -> Player -> Move -> Double}
+type FitnessFunction = Board -> Player -> Move -> Double
 
-makeGenes :: [Double] -> [(Board -> Player -> Move -> Double)] -> [Gene]
+data Gene = Gene {weight :: Double, function :: FitnessFunction}
+
+makeGenes :: [Double] -> [FitnessFunction] -> [Gene]
 makeGenes weights functions = Gene <$> weights <*> functions
 
 valueForMove :: Board -> Player -> Move -> Gene -> Double
@@ -60,7 +62,7 @@ instance Eq Chromosome where
 	(==) left right = name left == name right
 	(/=) left right = not $ left == right
 
-makeChromosomes :: [[Double]] -> [(Board -> Player -> Move -> Double)] -> [Chromosome] 
+makeChromosomes :: [[Double]] -> [FitnessFunction] -> [Chromosome] 
 makeChromosomes [] _ = []
 makeChromosomes [weights] functions = [Chromosome (makeGenes weights functions) $ show weights]
 makeChromosomes (firstWeights:otherWeights) functions = makeChromosomes [firstWeights] functions ++ makeChromosomes otherWeights functions

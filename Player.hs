@@ -1,5 +1,6 @@
 module Player(
 	Player(Player, color, pieces, name),
+	TurnCompletionFunction,
 	doTurn,
 	removePiece,
 	startingPieces,
@@ -26,7 +27,9 @@ import Board
 import Point
 import Move
 
-data Player = Player {pieces :: [Piece], color :: Color, completeMove :: Player -> Board -> Player -> IO (Maybe (Board, Player)), name :: String}
+type TurnCompletionFunction = Player -> Board -> Player -> IO (Maybe (Board, Player))
+
+data Player = Player {pieces :: [Piece], color :: Color, completeMove :: TurnCompletionFunction, name :: String}
 
 instance Display Player where
 	display player = let
@@ -112,7 +115,7 @@ displayToUserForPlayer player board = header ++ annotatedBoardString
 		boardString = displayForPlayer player board
 		annotatedBoardString = unlines $ zipWith (++) (show <$> repeatedSingleDigits) (lines $ boardString)
 
-doTurn :: Player -> Board -> Player -> IO (Maybe (Board, Player))
+doTurn :: TurnCompletionFunction
 doTurn player@(Player _ _ completeMove _) = completeMove player
 
 squaresRemaining :: Player -> Int

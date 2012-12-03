@@ -18,14 +18,14 @@ newComputer color chromosome = Player (startingPieces color) color (completeAiTu
 newHuman :: Color -> Player
 newHuman color = Player (startingPieces color) color completeUserTurn "Human Player!"
 
-completeAiTurn :: Chromosome -> Player -> Board -> Player -> IO (Maybe (Board, Player))
+completeAiTurn :: Chromosome -> TurnCompletionFunction
 completeAiTurn chromosome player board enemy = return $ (,) <$> updatedBoard <*> updatedPlayer
 	where
 		move = aiSelectedMove chromosome player board enemy
 		updatedBoard = applyMove board <$> move
 		updatedPlayer = removePiece player <$> piece <$> move
 
-completeUserTurn :: Player -> Board -> Player -> IO (Maybe (Board, Player))
+completeUserTurn :: TurnCompletionFunction
 completeUserTurn player board enemy = do
 	m <- getMove player board enemy
 	if isNothing m then
