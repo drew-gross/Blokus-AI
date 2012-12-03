@@ -42,9 +42,10 @@ launchPointsGained board _ move@(Move piece _) = fromIntegral $ numOfLaunchPoint
 		color = Piece.color piece
 
 enemyLaunchPointsLost :: Fractional a => Board -> Player -> Move -> a
-enemyLaunchPointsLost board enemy move@(Move piece _) = fromIntegral $ numOfLaunchPointsForColor board enemyColor - numOfLaunchPointsForColor (applyMove board move) enemyColor
+enemyLaunchPointsLost board enemy move@(Move piece _) = fromIntegral $ enemyLaunchPointsNow - numOfLaunchPointsForColor (applyMove board move) enemyColor
 	where
 		enemyColor = Player.color enemy
+		enemyLaunchPointsNow = numOfLaunchPointsForColor board enemyColor
 
 rubikDistanceToCenter :: Fractional a => Board -> Player -> Move -> a
 rubikDistanceToCenter board _ move@(Move piece position) = fromIntegral $ foldr (min) 100 rubikDistances --100 chosen arbitrarily, its larger than any board out there
@@ -73,10 +74,4 @@ fitnessForMove (Chromosome genes _) board enemy move = sum $ valueForMove board 
 
 functions = [squaresUsed, launchPointsGained, enemyLaunchPointsLost, rubikDistanceToCenter]
 weights = combinationsOfLength 4 1.0 (-1.0)
-
-chromosomes = [
-				Chromosome [Gene 1.0 squaresUsed, Gene 1.0 launchPointsGained, Gene 1.0 enemyLaunchPointsLost, Gene (-1.0) rubikDistanceToCenter] "neutral",
-				Chromosome [Gene 1.0 squaresUsed, Gene 1.0 launchPointsGained, Gene 2.0 enemyLaunchPointsLost, Gene (-1.0) rubikDistanceToCenter] "agressive",
-				Chromosome [Gene 1.0 squaresUsed, Gene 2.0 launchPointsGained, Gene 1.0 enemyLaunchPointsLost, Gene (-1.0) rubikDistanceToCenter] "defensive",
-				Chromosome [Gene 0.5 squaresUsed, Gene 0.0 launchPointsGained, Gene 3.0 enemyLaunchPointsLost, Gene (-1.0) rubikDistanceToCenter] "kamikazi"
-			  ]
+chromosomes = makeChromosomes weights functions
