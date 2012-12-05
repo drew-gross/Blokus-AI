@@ -12,6 +12,8 @@ module Utilities(
 
 import System.IO
 import Control.Applicative
+import Control.Monad.Trans.Maybe
+import Control.Monad.Trans.Class
 
 repeatedSingleDigits = concat $ repeat $ [1..9] ++ [0]
 

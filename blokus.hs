@@ -1,4 +1,6 @@
 import Control.Applicative
+import Control.Monad.Trans.Maybe
+import Control.Monad.Trans.Class
 
 import Data.Maybe
 import Data.List
@@ -15,32 +17,30 @@ import Chromosome
 newComputer :: Color -> Chromosome -> Player
 newComputer color chromosome = Player (startingPieces color) color (completeAiTurn chromosome) $ Chromosome.name chromosome 
 
-newHuman :: Color -> Player
-newHuman color = Player (startingPieces color) color completeUserTurn "Human Player!"
+newHuman :: Color -> String -> Player
+newHuman color name = Player (startingPieces color) color completeUserTurn name
 
-completeAiTurn :: Chromosome -> TurnCompletionFunction
-completeAiTurn chromosome player board enemy = return $ (,) <$> updatedBoard <*> updatedPlayer
+completeAiTurn :: Chromosome -> Player -> Board -> Player -> MaybeT IO (Board, Player)
+completeAiTurn chromosome player board enemy = (,) <$> updatedBoard <*> updatedPlayer
 	where
-		move = aiSelectedMove chromosome player board enemy
+		move = MaybeT $ return $ aiSelectedMove chromosome player board enemy
 		updatedBoard = applyMove board <$> move
 		updatedPlayer = removePiece player <$> piece <$> move
 
-completeUserTurn :: TurnCompletionFunction
+completeUserTurn :: Player -> Board -> Player -> MaybeT IO (Board, Player)
 completeUserTurn player board enemy = do
-	m <- getMove player board enemy
-	if isNothing m then
-		return Nothing
-	else do
-		let (move, updatedBoard, updatedPlayer) = fromJust m
-		if isValid board move then do
-			continue <- prompt $ displayToUserForPlayer updatedPlayer updatedBoard ++ "\n" ++ "Is this correct? (y/n): "
-			if continue == "y" then
-				return $ Just (updatedBoard, updatedPlayer)
-			else
-				completeUserTurn player board enemy
-		else do
-			putStr "Invalid Move!\n"
+	(move, updatedBoard, updatedPlayer) <- ioMove
+	if isValid board move then do
+		continue <- lift $ prompt $ displayToUserForPlayer updatedPlayer updatedBoard ++ "\n" ++ "Is this correct? (y/n): "
+		if continue == "y" then
+			return (updatedBoard, updatedPlayer)
+		else
 			completeUserTurn player board enemy
+	else do
+		lift $ putStr "Invalid Move!\n"
+		completeUserTurn player board enemy
+	where
+		ioMove = getMove player board enemy
 
 aiSelectedMove :: Chromosome -> Player -> Board -> Player -> Maybe Move
 aiSelectedMove chromosome player board enemy = maybeHead $ reverse $ sortBy (compare `on` fitnessForMove chromosome board enemy) $ validMoves player board
@@ -49,7 +49,7 @@ playGame :: (Board, [Player]) -> Bool -> IO ()
 playGame (board, players@(player:enemy:otherPlayers)) isGameOver
 	| length players /= 2 = error "Only 2 player games are supported for now"
 	| otherwise = do
-		m <- doTurn player board enemy
+		m <- runMaybeT $ doTurn player board enemy
 		if isNothing m && isGameOver then do
 			putStr $ winnerString ++ " beat " ++ loserString ++ "\n"
 		else if isNothing m then 
@@ -77,4 +77,4 @@ chromosomePairs :: [[Chromosome]]
 chromosomePairs = nub $ take 2 <$> permutations chromosomes
 
 main = playTournament (empty2PlayerBoard, playerPair <$> chromosomePairs)
---main = playGame (empty2PlayerBoard, [newComputer Yellow (chromosomes !! 0), newComputer Red (last chromosomes)]) False
+--main = playGame (empty2PlayerBoard, [newHuman Yellow "Drew", newComputer Red (last chromosomes)]) False

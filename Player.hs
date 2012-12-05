@@ -1,6 +1,5 @@
 module Player(
 	Player(Player, color, pieces, name),
-	TurnCompletionFunction,
 	doTurn,
 	removePiece,
 	startingPieces,
@@ -12,6 +11,8 @@ module Player(
 ) where
 
 import Control.Applicative
+import Control.Monad.Trans.Maybe
+import Control.Monad.Trans.Class
 
 import Data.List
 import Data.List.Split
@@ -27,9 +28,7 @@ import Board
 import Point
 import Move
 
-type TurnCompletionFunction = Player -> Board -> Player -> IO (Maybe (Board, Player))
-
-data Player = Player {pieces :: [Piece], color :: Color, completeMove :: TurnCompletionFunction, name :: String}
+data Player = Player {pieces :: [Piece], color :: Color, completeMove :: Player -> Board -> Player -> MaybeT IO (Board, Player), name :: String}
 
 instance Display Player where
 	display player = let
@@ -78,25 +77,25 @@ startingGrids color =
 	
 startingPieces color = zipWith (Piece) (startingGrids color) $ [1..]
 
-getUnrotatedPiece :: Player -> Board -> IO Piece
+getUnrotatedPiece :: Player -> Board -> MaybeT IO Piece
 getUnrotatedPiece player@(Player pieces _ _ _) board = do
-	maybePiece <- maybeIndex pieces <$> read1IndexedIndex <$> prompt promptString
+	maybePiece <- maybeIndex pieces <$> read1IndexedIndex <$> (lift $ prompt promptString)
 	fromMaybe (getUnrotatedPiece player board) $ return <$> maybePiece
 	where
 		promptString = displayToUserForPlayer player board ++ "\n" ++ (display player) ++ "\n" ++ "Enter piece number: "
 
-getRotatedPiece :: Player -> Board -> IO Piece
+getRotatedPiece :: Player -> Board -> MaybeT IO Piece
 getRotatedPiece player board = do
 	rotatedPieceList <- rotations <$> getUnrotatedPiece player board
 	let promptString = (displayNumberedList $ rotatedPieceList) ++ "\n" ++ "Enter rotation number:"
-	maybeRotatedPiece <- maybeIndex rotatedPieceList <$> read1IndexedIndex <$> prompt promptString
+	maybeRotatedPiece <- lift $ maybeIndex rotatedPieceList <$> read1IndexedIndex <$> prompt promptString
 	fromMaybe (getRotatedPiece player board) $ return <$> maybeRotatedPiece
 
-getMove :: Player -> Board -> Player -> IO (Maybe (Move, Board, Player))
+getMove :: Player -> Board -> Player -> MaybeT IO (Move, Board, Player)
 getMove player board _ = do
 	piece <- getRotatedPiece player board
-	move <- Move <$> (return piece) <*> read1IndexedPoint <$> getPoint
-	return $ Just (move, applyMove board move, removePiece player piece)
+	move <- lift $ Move <$> (return piece) <*> read1IndexedPoint <$> getPoint
+	lift $ return (move, applyMove board move, removePiece player piece)
 
 validMoves :: Player -> Board -> [Move]
 validMoves (Player pieces _ _ _) board = concat $ validMovesForPiece board <$> pieces
@@ -115,7 +114,7 @@ displayToUserForPlayer player board = header ++ annotatedBoardString
 		boardString = displayForPlayer player board
 		annotatedBoardString = unlines $ zipWith (++) (show <$> repeatedSingleDigits) (lines $ boardString)
 
-doTurn :: TurnCompletionFunction
+doTurn :: Player -> Board -> Player -> MaybeT IO (Board, Player)
 doTurn player@(Player _ _ completeMove _) = completeMove player
 
 squaresRemaining :: Player -> Int
