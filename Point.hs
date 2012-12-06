@@ -86,4 +86,4 @@ transposeRange (Point startX startY) (Point endX endY) = [Point x y | x <- [star
 read1IndexedPoint = (flip minus $ Point 1 1)
 
 getPoint :: MaybeT IO Point
-getPoint = Point <$> (lift $ read <$> prompt "Enter x: ") <*> (lift $ read <$> prompt "Enter y: ")
+getPoint = Point <$> (MaybeT $ maybeRead <$> prompt "Enter x: ") <*> (MaybeT $ maybeRead <$> prompt "Enter y: ")
