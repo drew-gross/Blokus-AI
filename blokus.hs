@@ -76,5 +76,5 @@ playerPair chromosomePair = [newComputer Red $ chromosomePair !! 0, newComputer 
 chromosomePairs :: [[Chromosome]]
 chromosomePairs = nub $ take 2 <$> permutations chromosomes
 
-main = playTournament (empty2PlayerBoard, playerPair <$> chromosomePairs)
---main = playGame (empty2PlayerBoard, [newHuman Yellow "Drew", newComputer Red (last chromosomes)]) False
+--main = playTournament (empty2PlayerBoard, playerPair <$> chromosomePairs)
+main = playGame (empty2PlayerBoard, [newHuman Yellow "Drew", newComputer Red (last chromosomes)]) False

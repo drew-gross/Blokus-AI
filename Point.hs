@@ -28,6 +28,8 @@ module Point
 
 import Utilities
 import Control.Applicative
+import Control.Monad.Trans.Maybe
+import Control.Monad.Trans.Class
 
 data Point = Point {x :: Int, y :: Int} deriving (Show, Eq)
 
@@ -83,5 +85,5 @@ transposeRange (Point startX startY) (Point endX endY) = [Point x y | x <- [star
 
 read1IndexedPoint = (flip minus $ Point 1 1)
 
-getPoint :: IO Point
-getPoint = Point <$> (read <$> prompt "Enter x: ") <*> (read <$> prompt "Enter y: ")
+getPoint :: MaybeT IO Point
+getPoint = Point <$> (lift $ read <$> prompt "Enter x: ") <*> (lift $ read <$> prompt "Enter y: ")
