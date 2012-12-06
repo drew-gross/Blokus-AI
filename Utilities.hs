@@ -6,7 +6,7 @@ module Utilities(
 	maybeRead,
 
 	prompt,
-	read1IndexedIndex,
+	cvtFrom1indexedInt,
 	combinationsOfLength
 ) where
 
@@ -32,14 +32,15 @@ maybeRead s = case reads s of
 	[(x, "")] -> Just x 
 	_         -> Nothing
 
+
 prompt :: String -> IO String
 prompt text = do
 	putStr text
 	hFlush stdout
 	getLine
 
-read1IndexedIndex :: String -> Int
-read1IndexedIndex = (flip (-) 1) . read
+cvtFrom1indexedInt :: Int -> Int
+cvtFrom1indexedInt = flip (-) 1
 
 combinationsOfLength :: Int -> [a] -> [[a]]
 combinationsOfLength 0 _ = []

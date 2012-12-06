@@ -77,19 +77,34 @@ startingGrids color =
 	
 startingPieces color = zipWith (Piece) (startingGrids color) $ [1..]
 
-getUnrotatedPiece :: Player -> Board -> MaybeT IO Piece
-getUnrotatedPiece player@(Player pieces _ _ _) board = do
-	maybePiece <- maybeIndex pieces <$> read1IndexedIndex <$> (lift $ prompt promptString)
-	fromMaybe (getUnrotatedPiece player board) $ return <$> maybePiece
+getPiece :: Player -> Board -> MaybeT IO Piece
+getPiece player@(Player pieces _ _ _) board = piece
 	where
 		promptString = displayToUserForPlayer player board ++ "\n" ++ (display player) ++ "\n" ++ "Enter piece number: "
+		input :: MaybeT IO String
+		input = lift $ prompt promptString
+		index :: MaybeT IO Int
+		index = MaybeT <$> return <$> ((fmap cvtFrom1indexedInt) . maybeRead) =<< input
+		piece :: MaybeT IO Piece
+		piece = MaybeT <$> return <$> maybeIndex pieces =<< index
 
 getRotatedPiece :: Player -> Board -> MaybeT IO Piece
-getRotatedPiece player board = do
-	rotatedPieceList <- rotations <$> getUnrotatedPiece player board
-	let promptString = (displayNumberedList $ rotatedPieceList) ++ "\n" ++ "Enter rotation number:"
-	maybeRotatedPiece <- lift $ maybeIndex rotatedPieceList <$> read1IndexedIndex <$> prompt promptString
-	fromMaybe (getRotatedPiece player board) $ return <$> maybeRotatedPiece
+getRotatedPiece player@(Player pieces _ _ _) board = piece
+	where
+		promptString :: MaybeT IO String
+		promptString = (++) <$> displayListString <*> restOfString
+		input :: MaybeT IO String
+		input = MaybeT <$> (fmap Just) <$> prompt =<< promptString
+		index :: MaybeT IO Int
+		index = MaybeT <$> return <$> ((fmap cvtFrom1indexedInt) . maybeRead) =<< input
+		piece :: MaybeT IO Piece
+		piece = MaybeT <$> return <$> maybeIndex pieces =<< index
+		rotatedPieceList :: MaybeT IO [Piece]
+		rotatedPieceList = rotations <$> getPiece player board
+		displayListString :: MaybeT IO String
+		displayListString = displayNumberedList <$> rotatedPieceList
+		restOfString :: MaybeT IO String
+		restOfString = MaybeT <$> return <$> Just $ "\nEnter rotation number:"
 
 getMove :: Player -> Board -> Player -> MaybeT IO (Move, Board, Player)
 getMove player board _ = do
