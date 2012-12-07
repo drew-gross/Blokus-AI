@@ -20,27 +20,31 @@ newComputer color chromosome = Player (startingPieces color) color (completeAiTu
 newHuman :: Color -> String -> Player
 newHuman color name = Player (startingPieces color) color completeUserTurn name
 
-completeAiTurn :: Chromosome -> Player -> Board -> Player -> MaybeT IO (Board, Player)
-completeAiTurn chromosome player board enemy = (,) <$> updatedBoard <*> updatedPlayer
+completeAiTurn :: Chromosome -> Player -> Board -> Player -> IO (Maybe (Board, Player))
+completeAiTurn chromosome player board enemy = return $ (,) <$> updatedBoard <*> updatedPlayer
 	where
-		move = MaybeT $ return $ aiSelectedMove chromosome player board enemy
+		move :: Maybe Move
+		move = aiSelectedMove chromosome player board enemy
+		updatedBoard :: Maybe Board
 		updatedBoard = applyMove board <$> move
+		updatedPlayer :: Maybe Player
 		updatedPlayer = removePiece player <$> piece <$> move
 
-completeUserTurn :: Player -> Board -> Player -> MaybeT IO (Board, Player)
+completeUserTurn :: Player -> Board -> Player -> IO (Maybe (Board, Player))
 completeUserTurn player board enemy = do
 	(move, updatedBoard, updatedPlayer) <- ioMove
 	if isValid board move then do
-		continue <- lift $ prompt $ displayToUserForPlayer updatedPlayer updatedBoard ++ "\n" ++ "Is this correct? (y/n): "
+		continue <- prompt $ displayToUserForPlayer updatedPlayer updatedBoard ++ "\n" ++ "Is this correct? (y/n): "
 		if continue == "y" then
-			return (updatedBoard, updatedPlayer)
+			return $ Just (updatedBoard, updatedPlayer)
 		else
 			completeUserTurn player board enemy
 	else do
-		lift $ putStr "Invalid Move!\n"
+		putStr "Invalid Move!\n"
 		completeUserTurn player board enemy
 	where
-		ioMove = getMove player board enemy
+		ioMove :: IO (Move, Board, Player)
+		ioMove = retry $ getMove player board enemy
 
 aiSelectedMove :: Chromosome -> Player -> Board -> Player -> Maybe Move
 aiSelectedMove chromosome player board enemy = maybeHead $ reverse $ sortBy (compare `on` fitnessForMove chromosome board enemy) $ validMoves player board
@@ -49,7 +53,7 @@ playGame :: (Board, [Player]) -> Bool -> IO ()
 playGame (board, players@(player:enemy:otherPlayers)) isGameOver
 	| length players /= 2 = error "Only 2 player games are supported for now"
 	| otherwise = do
-		m <- runMaybeT $ doTurn player board enemy
+		m <- doTurn player board enemy
 		if isNothing m && isGameOver then do
 			putStr $ winnerString ++ " beat " ++ loserString ++ "\n"
 		else if isNothing m then 

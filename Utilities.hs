@@ -4,6 +4,7 @@ module Utilities(
 	maybeIndex,
 	maybeHead,
 	maybeRead,
+	retry,
 
 	prompt,
 	cvtFrom1indexedInt,
@@ -11,6 +12,9 @@ module Utilities(
 ) where
 
 import System.IO
+
+import Data.Maybe
+
 import Control.Applicative
 import Control.Monad.Trans.Maybe
 import Control.Monad.Trans.Class
@@ -53,3 +57,11 @@ prependToCombinations n xs x = prependToLists x $ combinationsOfLength n xs
 
 prependToLists :: a -> [[a]] -> [[a]]
 prependToLists x lists = map (x :) lists
+
+retry :: MaybeT IO a -> IO a
+retry x = do
+	val <- runMaybeT x
+	if isNothing val then
+		retry x
+	else
+		return $ fromJust val
