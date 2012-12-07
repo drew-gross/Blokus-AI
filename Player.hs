@@ -90,7 +90,7 @@ getPiece player@(Player pieces _ _ _) board = piece
 
 getRotatedPiece :: Player -> Board -> IO (Maybe Piece)
 getRotatedPiece player@(Player pieces _ _ _) board = do
-	unrotatedPiece :: Maybe Piece <- runMaybeT $ getPiece player board
+	unrotatedPiece <- runMaybeT $ getPiece player board
 	let rotatedPieceList :: MaybeT IO [Piece] = rotations <$> (MaybeT $ (return unrotatedPiece))
 	let displayListString = displayNumberedList <$> rotatedPieceList
 	let restOfString = MaybeT <$> return <$> Just $ "\nEnter rotation number:"
