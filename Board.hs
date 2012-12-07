@@ -13,7 +13,7 @@ module Board(
 	validMovesForPiece
 ) where
 
-import Control.Applicative
+import Control.Applicative hiding (empty)
 
 import Data.List.Split
 import Data.Maybe
@@ -32,7 +32,7 @@ defaultSize = 14
 defaultStartPoints = [Point 4 4, Point 9 9]
 
 empty2PlayerBoard :: Board
-empty2PlayerBoard = Board (makeEmptyGrid defaultSize defaultSize Empty) defaultStartPoints
+empty2PlayerBoard = Board (makeEmptyGrid defaultSize defaultSize empty) defaultStartPoints
 
 candidateMovesForPieceRotation :: Board -> Piece -> [Move]
 candidateMovesForPieceRotation board@(Board boardGrid _) piece@(Piece pieceGrid identifier) = Move piece <$> range origin maxPlacementPoint
@@ -54,7 +54,7 @@ isInBounds (Board bgrid _) (Move (Piece grid _) position)
 isValid :: Board -> Move -> Bool
 isValid board move@(Move piece position)
 	| not $ isInBounds board move = False --move is outside of board
-	| any (\point -> unsafeColorAt board point /= Empty) pointsOnBoard = False --move is overlapping another piece
+	| any (\point -> unsafeColorAt board point /= empty) pointsOnBoard = False --move is overlapping another piece
 	| any (isPointAdjacentToColor board color) pointsOnBoard = False --side of piece is touching its own color
 	| any (isPointLaunchPointForColor board color) pointsOnBoard = True
 	| otherwise = False
@@ -103,7 +103,7 @@ isPointCornerToColor board color point = color `elem` cornersOfPoint board point
 isPointLaunchPointForColor :: Board -> Color -> Point -> Bool
 isPointLaunchPointForColor board color point 
 	| isNothing colorAtPoint = False
-	| fromJust colorAtPoint /= Empty = False
+	| fromJust colorAtPoint /= empty = False
 	| isPointAdjacentToColor board color point = False
 	| isPointCornerToColor board color point = True
 	| point `elem` startPoints board = True
@@ -123,7 +123,7 @@ prevPoint _ point = Point (x point - 1) (y point)
 displayString :: Board -> Color -> Point -> String
 displayString board color point
 	| isNothing colorAtPoint = error "displayChar: point out of bounds of board"
-	| fromJust colorAtPoint /= Empty = display $ fromJust colorAtPoint
+	| fromJust colorAtPoint /= empty = display $ fromJust colorAtPoint
 	| isPointLaunchPointForColor board color point = "O"
 	| otherwise = "."
 	where colorAtPoint = colorAt board point

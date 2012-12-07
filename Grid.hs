@@ -25,7 +25,7 @@ module Grid (
 ) where
 
 import Data.List.Split
-import Data.Vector
+import Data.Vector hiding (empty)
 import Data.Maybe
 
 import Point
@@ -120,7 +120,7 @@ flipAboutVertical grid@(Grid _ width height) = Grid newArray width height
 		newArray = fromList [unsafeItemAt grid $ Point (width - x - 1) y | Point x y <- allPoints grid]
 
 color :: Grid Color -> Color
-color (Grid array _ _) = Data.Vector.head $ Data.Vector.filter (/= Empty) array
+color (Grid array _ _) = Data.Vector.head $ Data.Vector.filter (/= empty) array
 
 transpose :: Grid t -> Grid t
 transpose grid@(Grid _ width height) = Grid newArray height width

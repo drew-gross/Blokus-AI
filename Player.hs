@@ -10,7 +10,7 @@ module Player(
 	validMoves
 ) where
 
-import Control.Applicative
+import Control.Applicative hiding (empty)
 import Control.Monad.Trans.Maybe
 import Control.Monad.Trans.Class
 
@@ -53,26 +53,26 @@ startingGrids color =
 			 makeFilledGridWithList [color, color] 2, --2
 
 			 makeFilledGridWithList [color, color, color] 3, --I3
-			 makeFilledGridWithList [color, Empty, color, color] 2, --V3
+			 makeFilledGridWithList [color, empty, color, color] 2, --V3
 
 			 makeFilledGridWithList [color, color, color, color] 4, --I4
-			 makeFilledGridWithList [color, color, color, Empty, color, Empty] 3, --T4
-			 makeFilledGridWithList [color, color, color, Empty, Empty, color] 3, --L4
-			 makeFilledGridWithList [color, color, Empty, Empty, color, color] 3, --Z4
+			 makeFilledGridWithList [color, color, color, empty, color, empty] 3, --T4
+			 makeFilledGridWithList [color, color, color, empty, empty, color] 3, --L4
+			 makeFilledGridWithList [color, color, empty, empty, color, color] 3, --Z4
 			 makeFilledGridWithList [color, color, color, color] 2, --O
 
 			 makeFilledGridWithList [color, color, color, color, color] 5, --I5
-			 makeFilledGridWithList [color, color, color, color, color, Empty, Empty, Empty] 4, --L5
-			 makeFilledGridWithList [color, color, color, color, Empty, color, Empty, Empty] 4, --Y
-			 makeFilledGridWithList [Empty, color, color, color, color, color, Empty, Empty] 4, --N
-			 makeFilledGridWithList [color, color, color, color, color, Empty] 3, --P
-			 makeFilledGridWithList [color, color, color, color, Empty, color] 3, --U
-			 makeFilledGridWithList [Empty, color, Empty, color, color, color, Empty, color, Empty] 3, --X
-			 makeFilledGridWithList [color, color, color, color, Empty, Empty, color, Empty, Empty] 3, --V5
-			 makeFilledGridWithList [color, color, color, Empty, color, Empty, Empty, color, Empty] 3, --T5
-			 makeFilledGridWithList [color, Empty, Empty, color, color, color, Empty, Empty, color] 3, --Z5
-			 makeFilledGridWithList [color, Empty, Empty, color, color, Empty, Empty, color, color] 3, --W
-			 makeFilledGridWithList [Empty, color, color, color, color, Empty, Empty, color, Empty] 3 --F
+			 makeFilledGridWithList [color, color, color, color, color, empty, empty, empty] 4, --L5
+			 makeFilledGridWithList [color, color, color, color, empty, color, empty, empty] 4, --Y
+			 makeFilledGridWithList [empty, color, color, color, color, color, empty, empty] 4, --N
+			 makeFilledGridWithList [color, color, color, color, color, empty] 3, --P
+			 makeFilledGridWithList [color, color, color, color, empty, color] 3, --U
+			 makeFilledGridWithList [empty, color, empty, color, color, color, empty, color, empty] 3, --X
+			 makeFilledGridWithList [color, color, color, color, empty, empty, color, empty, empty] 3, --V5
+			 makeFilledGridWithList [color, color, color, empty, color, empty, empty, color, empty] 3, --T5
+			 makeFilledGridWithList [color, empty, empty, color, color, color, empty, empty, color] 3, --Z5
+			 makeFilledGridWithList [color, empty, empty, color, color, empty, empty, color, color] 3, --W
+			 makeFilledGridWithList [empty, color, color, color, color, empty, empty, color, empty] 3 --F
 			 ]
 	
 startingPieces color = zipWith (Piece) (startingGrids color) $ [1..]

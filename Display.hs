@@ -16,8 +16,9 @@ instance (Display a) => Display [a] where
 	display list = concatMap display list ++ "\n"
 
 instance Display Color where
-	display Empty = "."
-	display color = coloredString "█" color
+	display color
+		| color == empty = "."
+		| otherwise = coloredString "█" color
 
 instance Display Char where
 	display char = [char]
