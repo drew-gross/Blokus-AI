@@ -6,6 +6,8 @@ import Data.Maybe
 import Data.List
 import Data.Function
 
+import System.Posix.IO
+
 import Utilities
 import Board
 import Player
@@ -49,13 +51,13 @@ completeUserTurn player board enemy = do
 aiSelectedMove :: Chromosome -> Player -> Board -> Player -> Maybe Move
 aiSelectedMove chromosome player board enemy = maybeHead $ reverse $ sortBy (compare `on` fitnessForMove chromosome board enemy) $ validMoves player board
 
-playGame :: (Board, [Player]) -> Bool -> IO ()
+playGame :: (Board, [Player]) -> Bool -> IO [Player]
 playGame (board, players@(player:enemy:otherPlayers)) isGameOver
 	| length players /= 2 = error "Only 2 player games are supported for now"
 	| otherwise = do
 		m <- doTurn player board enemy
 		if isNothing m && isGameOver then do
-			putStr $ winnerString ++ " beat " ++ loserString ++ "\n"
+			return [winingPlayer, losingPlayer]
 		else if isNothing m then 
 			playGame (board, enemy:otherPlayers ++ [player]) True --current player can't move, put them on the back of the stack and let next player go
 		else do
@@ -80,5 +82,5 @@ playerPair chromosomePair = [newComputer Red $ chromosomePair !! 0, newComputer 
 chromosomePairs :: [[Chromosome]]
 chromosomePairs = nub $ take 2 <$> permutations chromosomes
 
---main = playTournament (empty2PlayerBoard, playerPair <$> chromosomePairs)
-main = playGame (empty2PlayerBoard, [newHuman Yellow "Drew", newComputer Red (last chromosomes)]) False
+main = playTournament (empty2PlayerBoard, playerPair <$> chromosomePairs)
+--main = playGame (empty2PlayerBoard, [newHuman Yellow "Drew", newComputer Red (last chromosomes)]) False
