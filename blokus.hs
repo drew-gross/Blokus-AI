@@ -82,5 +82,11 @@ playerPair chromosomePair = [newComputer Red $ chromosomePair !! 0, newComputer 
 chromosomePairs :: [[Chromosome]]
 chromosomePairs = nub $ take 2 <$> permutations chromosomes
 
-main = playTournament (empty2PlayerBoard, playerPair <$> chromosomePairs)
+main = do
+	results <- playTournament (empty2PlayerBoard, playerPair <$> chromosomePairs)
+	writeFile "results/tournament.txt" $ concatMap playersToString results
+	where
+		playersToString :: [Player] -> String
+		playersToString (winner:loser:[]) = show winner ++ " beat " ++ show loser ++ "\n"
+
 --main = playGame (empty2PlayerBoard, [newHuman Yellow "Drew", newComputer Red (last chromosomes)]) False
