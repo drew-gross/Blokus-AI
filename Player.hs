@@ -100,8 +100,8 @@ getRotatedPiece player@(Player pieces _ _ _) board = do
 getMove :: Player -> Board -> Player -> MaybeT IO (Move, Board, Player)
 getMove player board _ = do
 	piece <- (MaybeT $ getRotatedPiece player board)
-	move <- Move <$> (return piece) <*> read1IndexedPoint <$> getPoint
-	lift $ return (move, applyMove board move, removePiece player piece)
+	move <- Move <$> (return $! piece) <*> read1IndexedPoint <$> getPoint
+	lift $ return $! (move, applyMove board move, removePiece player piece)
 
 validMoves :: Player -> Board -> [Move]
 validMoves (Player pieces _ _ _) board = concat $ validMovesForPiece board <$> pieces

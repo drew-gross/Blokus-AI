@@ -23,7 +23,7 @@ newHuman :: Color -> String -> Player
 newHuman color name = Player (startingPieces color) color completeUserTurn name
 
 completeAiTurn :: Chromosome -> Player -> Board -> Player -> IO (Maybe (Board, Player))
-completeAiTurn chromosome player board enemy = return $ (,) <$> updatedBoard <*> updatedPlayer
+completeAiTurn chromosome player board enemy = return $! (,) <$> updatedBoard <*> updatedPlayer
 	where
 		move :: Maybe Move
 		move = aiSelectedMove chromosome player board enemy
@@ -38,7 +38,7 @@ completeUserTurn player board enemy = do
 	if isValid board move then do
 		continue <- prompt $ displayToUserForPlayer updatedPlayer updatedBoard ++ "\n" ++ "Is this correct? (y/n): "
 		if continue == "y" then
-			return $ Just (updatedBoard, updatedPlayer)
+			return $! Just (updatedBoard, updatedPlayer)
 		else
 			completeUserTurn player board enemy
 	else do
@@ -57,7 +57,7 @@ playGame (board, players@(player:enemy:otherPlayers)) isGameOver
 	| otherwise = do
 		m <- doTurn player board enemy
 		if isNothing m && isGameOver then do
-			return [winingPlayer, losingPlayer]
+			return $! [winingPlayer, losingPlayer]
 		else if isNothing m then 
 			playGame (board, enemy:otherPlayers ++ [player]) True --current player can't move, put them on the back of the stack and let next player go
 		else do
