@@ -61,7 +61,7 @@ prependToLists x lists = map (x :) lists
 retry :: MaybeT IO a -> IO a
 retry x = do
 	val <- runMaybeT x
-	if isNothing val then
-		retry x
-	else
-		return $ fromJust val
+	retryOrReturn $ return <$> val
+	where
+		retryOrReturn Nothing = retry x
+		retryOrReturn (Just result) = result

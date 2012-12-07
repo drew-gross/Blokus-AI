@@ -68,11 +68,13 @@ playGame (board, players@(player:enemy:otherPlayers)) isGameOver
 		winingPlayer = winner players
 		losingPlayer = head (players \\ [winingPlayer])
 
-playTournament :: (Board, [[Player]]) -> IO ()
-playTournament (board, []) = return ()
+playTournament :: (Board, [[Player]]) -> IO [[Player]]
+playTournament (board, []) = return []
 playTournament (board, pair:pairs) = do
-	playGame (board, pair) False
-	playTournament (board, pairs)
+	(:) <$> result <*> otherResults
+	where
+		result = playGame (board, pair) False
+		otherResults = playTournament (board, pairs)
 
 playerPair :: [Chromosome] -> [Player]
 playerPair chromosomePair = [newComputer Red $ chromosomePair !! 0, newComputer Blue $ chromosomePair !! 1]
