@@ -81,17 +81,14 @@ getPiece :: Player -> Board -> MaybeT IO Piece
 getPiece player@(Player pieces _ _ _) board = piece
 	where
 		promptString = displayToUserForPlayer player board ++ "\n" ++ (display player) ++ "\n" ++ "Enter piece number: "
-		input :: MaybeT IO String
 		input = lift $ prompt promptString
-		index :: MaybeT IO Int
 		index = MaybeT <$> return <$> ((fmap cvtFrom1indexedInt) . maybeRead) =<< input
-		piece :: MaybeT IO Piece
 		piece = MaybeT <$> return <$> maybeIndex pieces =<< index
 
 getRotatedPiece :: Player -> Board -> IO (Maybe Piece)
 getRotatedPiece player@(Player pieces _ _ _) board = do
 	unrotatedPiece <- runMaybeT $ getPiece player board
-	let rotatedPieceList :: MaybeT IO [Piece] = rotations <$> (MaybeT $ (return unrotatedPiece))
+	let rotatedPieceList = rotations <$> (MaybeT $ (return unrotatedPiece))
 	let displayListString = displayNumberedList <$> rotatedPieceList
 	let restOfString = MaybeT <$> return <$> Just $ "\nEnter rotation number:"
 	let promptString = (++) <$> displayListString <*> restOfString
