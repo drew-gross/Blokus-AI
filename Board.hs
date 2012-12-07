@@ -73,11 +73,11 @@ colorAt :: Board -> Point -> Maybe Color
 colorAt (Board grid _) = itemAt grid
 
 unsafeColorAt :: Board -> Point -> Color
-unsafeColorAt (Board grid _) point
-	| isNothing item = error $ "unsafeColorAt has a Nothing as its item!\n" ++ show grid
-	| otherwise = fromJust $ item
+unsafeColorAt (Board grid _) point = result item
 	where
 		item = itemAt grid point
+		result Nothing = error $ "unsafeColorAt has a Nothing as its item!\n" ++ show grid
+		result (Just val) = val
 
 changeColorAt :: Board -> Color -> Point -> Board
 changeColorAt (Board grid startPoints) color point = Board (changeItemAt grid color point) startPoints
