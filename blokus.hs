@@ -67,8 +67,6 @@ playGame (board, players@(player:enemy:otherPlayers)) isGameOver
 	where
 		winingPlayer = winner players
 		losingPlayer = head (players \\ [winingPlayer])
-		winnerString = displayColored (Player.color winingPlayer) (Player.name winingPlayer)
-		loserString = displayColored (Player.color losingPlayer) (Player.name losingPlayer)
 
 playTournament :: (Board, [[Player]]) -> IO ()
 playTournament (board, []) = return ()
