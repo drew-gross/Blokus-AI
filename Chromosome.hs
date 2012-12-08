@@ -77,11 +77,8 @@ newHuman color name = Player (startingPieces color) color completeUserTurn name
 completeAiTurn :: Chromosome -> Player -> Board -> Player -> IO (Maybe (Board, Player))
 completeAiTurn chromosome player board enemy = return $! (,) <$> updatedBoard <*> updatedPlayer
 	where
-		move :: Maybe Move
 		move = aiSelectedMove chromosome player board enemy
-		updatedBoard :: Maybe Board
 		updatedBoard = applyMove board <$> move
-		updatedPlayer :: Maybe Player
 		updatedPlayer = removePiece player <$> piece <$> move
 
 aiSelectedMove :: Chromosome -> Player -> Board -> Player -> Maybe Move
