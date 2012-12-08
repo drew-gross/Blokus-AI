@@ -2,6 +2,8 @@ module Chromosome (
 	Chromosome(Chromosome, name),
 	Gene(Gene),
 	chromosomes,
+	newComputer,
+	newHuman,
 
 	fitnessForMove,
 
@@ -14,8 +16,10 @@ module Chromosome (
 import Control.Applicative
 
 import Data.List
+import Data.Function
 
 import Utilities
+import Color
 import Player hiding (name)
 import Move
 import Piece
@@ -63,6 +67,41 @@ instance Show Chromosome where
 instance Eq Chromosome where
 	(==) left right = name left == name right
 	(/=) left right = not $ left == right
+
+newComputer :: Color -> Chromosome -> Player
+newComputer color chromosome@(Chromosome _ name) = Player (startingPieces color) color (completeAiTurn chromosome) name 
+
+newHuman :: Color -> String -> Player
+newHuman color name = Player (startingPieces color) color completeUserTurn name
+
+completeAiTurn :: Chromosome -> Player -> Board -> Player -> IO (Maybe (Board, Player))
+completeAiTurn chromosome player board enemy = return $! (,) <$> updatedBoard <*> updatedPlayer
+	where
+		move :: Maybe Move
+		move = aiSelectedMove chromosome player board enemy
+		updatedBoard :: Maybe Board
+		updatedBoard = applyMove board <$> move
+		updatedPlayer :: Maybe Player
+		updatedPlayer = removePiece player <$> piece <$> move
+
+aiSelectedMove :: Chromosome -> Player -> Board -> Player -> Maybe Move
+aiSelectedMove chromosome player board enemy = maybeHead $ reverse $ sortBy (compare `on` fitnessForMove chromosome board enemy) $ validMoves player board
+
+completeUserTurn :: Player -> Board -> Player -> IO (Maybe (Board, Player))
+completeUserTurn player board enemy = do
+	(move, updatedBoard, updatedPlayer) <- ioMove
+	if isValid board move then do
+		continue <- prompt $ displayToUserForPlayer updatedPlayer updatedBoard ++ "\n" ++ "Is this correct? (y/n): "
+		if continue == "y" then
+			return $! Just (updatedBoard, updatedPlayer)
+		else
+			completeUserTurn player board enemy
+	else do
+		putStr "Invalid Move!\n"
+		completeUserTurn player board enemy
+	where
+		ioMove :: IO (Move, Board, Player)
+		ioMove = retry $ getMove player board enemy
 
 makeChromosomes :: [[Double]] -> [FitnessFunction] -> [Chromosome] 
 makeChromosomes [] _ = []

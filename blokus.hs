@@ -16,41 +16,6 @@ import Display
 import Move
 import Chromosome
 
-newComputer :: Color -> Chromosome -> Player
-newComputer color chromosome = Player (startingPieces color) color (completeAiTurn chromosome) $ Chromosome.name chromosome 
-
-newHuman :: Color -> String -> Player
-newHuman color name = Player (startingPieces color) color completeUserTurn name
-
-completeAiTurn :: Chromosome -> Player -> Board -> Player -> IO (Maybe (Board, Player))
-completeAiTurn chromosome player board enemy = return $! (,) <$> updatedBoard <*> updatedPlayer
-	where
-		move :: Maybe Move
-		move = aiSelectedMove chromosome player board enemy
-		updatedBoard :: Maybe Board
-		updatedBoard = applyMove board <$> move
-		updatedPlayer :: Maybe Player
-		updatedPlayer = removePiece player <$> piece <$> move
-
-completeUserTurn :: Player -> Board -> Player -> IO (Maybe (Board, Player))
-completeUserTurn player board enemy = do
-	(move, updatedBoard, updatedPlayer) <- ioMove
-	if isValid board move then do
-		continue <- prompt $ displayToUserForPlayer updatedPlayer updatedBoard ++ "\n" ++ "Is this correct? (y/n): "
-		if continue == "y" then
-			return $! Just (updatedBoard, updatedPlayer)
-		else
-			completeUserTurn player board enemy
-	else do
-		putStr "Invalid Move!\n"
-		completeUserTurn player board enemy
-	where
-		ioMove :: IO (Move, Board, Player)
-		ioMove = retry $ getMove player board enemy
-
-aiSelectedMove :: Chromosome -> Player -> Board -> Player -> Maybe Move
-aiSelectedMove chromosome player board enemy = maybeHead $ reverse $ sortBy (compare `on` fitnessForMove chromosome board enemy) $ validMoves player board
-
 playGame :: (Board, [Player]) -> Bool -> IO [Player]
 playGame (board, players@(player:enemy:otherPlayers)) isGameOver
 	| length players /= 2 = error "Only 2 player games are supported for now"
