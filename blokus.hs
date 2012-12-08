@@ -42,7 +42,7 @@ playTournament (board, pair:pairs) = do
 		otherResults = playTournament (board, pairs)
 
 playerPair :: [Chromosome] -> [Player]
-playerPair chromosomePair = [newComputer red $ chromosomePair !! 0, newComputer blue $ chromosomePair !! 1]
+playerPair (first:second:[]) = [newComputer red first, newComputer blue second]
 
 chromosomePairs :: [[Chromosome]]
 chromosomePairs = nub $ take 2 <$> permutations chromosomes
