@@ -84,8 +84,8 @@ changeColorAt (Board grid startPoints) color point = Board (changeItemAt grid co
 
 cornersOfPoint :: Board -> Point -> [Color]
 cornersOfPoint (Board grid _) point = catMaybes items
-	where
-		points = ($ point) <$> [ulPoint, urPoint, drPoint, dlPoint]
+	points
+		where = ($ point) <$> [ulPoint, urPoint, drPoint, dlPoint]
 		items = itemAt grid <$> points
 
 sidesOfPoint :: Board -> Point -> [Color]

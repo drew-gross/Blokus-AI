@@ -1,3 +1,10 @@
+module Game (
+	playGame,
+	playTournament
+) where
+
+main = putStrLn "Hello World"
+
 import Control.Applicative
 import Control.Monad.Trans.Maybe
 import Control.Monad.Trans.Class
