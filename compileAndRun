@@ -1,1 +1,0 @@
-ghc --make -O2 blokus && ./blokus

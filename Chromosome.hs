@@ -17,6 +17,7 @@ import Control.Applicative
 
 import Data.List
 import Data.Function
+import Data.Maybe
 
 import Utilities
 import Color
@@ -86,19 +87,20 @@ aiSelectedMove chromosome player board enemy = maybeHead $ reverse $ sortBy (com
 
 completeUserTurn :: Player -> Board -> Player -> IO (Maybe (Board, Player))
 completeUserTurn player board enemy = do
-	(move, updatedBoard, updatedPlayer) <- ioMove
-	if isValid board move then do
-		continue <- prompt $ displayToUserForPlayer updatedPlayer updatedBoard ++ "\n" ++ "Is this correct? (y/n): "
-		if continue == "y" then
-			return $! Just (updatedBoard, updatedPlayer)
-		else
-			completeUserTurn player board enemy
+	val <- retry $ getMove player board enemy
+	if isNothing val then do
+		return $! Nothing
 	else do
-		putStr "Invalid Move!\n"
-		completeUserTurn player board enemy
-	where
-		ioMove :: IO (Move, Board, Player)
-		ioMove = retry $ getMove player board enemy
+		let Just (move, updatedBoard, updatedPlayer) = val
+		if isValid board move then do
+			continue <- prompt $ displayToUserForPlayer updatedPlayer updatedBoard ++ "\n" ++ "Is this correct? (y/n): "
+			if continue == "y" then
+				return $! Just (updatedBoard, updatedPlayer)
+			else
+				completeUserTurn player board enemy
+		else do
+			putStr "Invalid Move!\n"
+			completeUserTurn player board enemy
 
 makeChromosomes :: [[Double]] -> [FitnessFunction] -> [Chromosome] 
 makeChromosomes [] _ = []

@@ -97,11 +97,20 @@ getRotatedPiece player@(Player pieces _ _ _) board = do
 	let piece = MaybeT <$> return <$> uncurry maybeIndex =<< (,) <$> rotatedPieceList <*> index
 	runMaybeT piece
 
-getMove :: Player -> Board -> Player -> MaybeT IO (Move, Board, Player)
+getCanMove :: IO Bool
+getCanMove = do
+	canMove <- prompt "Can you make a move (y/n): "
+	return $! canMove /= "n"
+
+getMove :: Player -> Board -> Player -> MaybeT IO (Maybe (Move, Board, Player))
 getMove player board _ = do
-	piece <- (MaybeT $ getRotatedPiece player board)
-	move <- Move <$> (return $! piece) <*> read1IndexedPoint <$> getPoint
-	lift $ return $! (move, applyMove board move, removePiece player piece)
+	canMove <- MaybeT $ Just <$> getCanMove
+	if canMove then do
+		piece <- MaybeT $ getRotatedPiece player board
+		move <- Move <$> (return $! piece) <*> read1IndexedPoint <$> getPoint
+		return $! Just (move, applyMove board move, removePiece player piece)
+	else
+		return Nothing
 
 validMoves :: Player -> Board -> [Move]
 validMoves (Player pieces _ _ _) board = concat $ validMovesForPiece board <$> pieces
