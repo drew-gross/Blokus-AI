@@ -2,9 +2,9 @@
 *.hi
 *.o
 *.hcr
+*.prof
 playVsHuman
 playTournament
 playGame
 playgame.txt
-blokus.prof
 results/*
