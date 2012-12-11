@@ -25,7 +25,7 @@ module Grid (
 ) where
 
 import Data.List.Split
-import Data.Vector hiding (empty)
+import Data.Vector as V hiding (empty)
 import Data.Maybe
 
 import Point
@@ -78,7 +78,7 @@ itemIndex :: Grid t -> Point -> Int
 itemIndex grid (Point x y) = (y * (width grid)) + x
 
 itemPoint :: Grid t -> Int -> Point
-itemPoint (Grid array width _) index = Point {x = Data.Vector.length array `mod` width, y = Data.Vector.length array `div` width}
+itemPoint (Grid array width _) index = Point {x = V.length array `mod` width, y = V.length array `div` width}
 
 --For use when you know you aren't going to access out of bounds
 unsafeItemAt :: Grid t -> Point -> t
@@ -103,16 +103,16 @@ changeItemAt grid@(Grid array width height) newItem point = Grid (fromList newLi
 changeItemsAt :: Grid t -> Vector t -> [Point] -> Grid t 
 changeItemsAt grid indexes (point:points)
 	| Prelude.length points == 1 = gridWithFirstItemChanged
-	| otherwise = changeItemsAt gridWithFirstItemChanged (Data.Vector.tail indexes) points
+	| otherwise = changeItemsAt gridWithFirstItemChanged (V.tail indexes) points
 	where
-		gridWithFirstItemChanged = changeItemAt grid (Data.Vector.head indexes) point
+		gridWithFirstItemChanged = changeItemAt grid (V.head indexes) point
 
 changeGridAt :: Grid t -> Grid t -> Point -> Grid t
 changeGridAt oldGrid@(Grid oldArray _ _) newGrid@(Grid newArray _ _) point
-	| Data.Vector.length oldArray == 1 = changeItemAt oldGrid (Data.Vector.head oldArray) point
+	| V.length oldArray == 1 = changeItemAt oldGrid (V.head oldArray) point
 	| otherwise = changeItemsAt oldGrid oldArray pointList
 	where
-		pointList = [itemPoint newGrid index | index <- Prelude.take (Data.Vector.length newArray) [0..]]
+		pointList = [itemPoint newGrid index | index <- Prelude.take (V.length newArray) [0..]]
 
 flipAboutVertical :: Grid t -> Grid t
 flipAboutVertical grid@(Grid _ width height) = Grid newArray width height
@@ -120,7 +120,7 @@ flipAboutVertical grid@(Grid _ width height) = Grid newArray width height
 		newArray = fromList [unsafeItemAt grid $ Point (width - x - 1) y | Point x y <- allPoints grid]
 
 color :: Grid Color -> Color
-color (Grid array _ _) = Data.Vector.head $ Data.Vector.filter (/= empty) array
+color (Grid array _ _) = V.head $ V.filter (/= empty) array
 
 transpose :: Grid t -> Grid t
 transpose grid@(Grid _ width height) = Grid newArray height width
@@ -130,6 +130,6 @@ transpose grid@(Grid _ width height) = Grid newArray height width
 rotate90 = flipAboutVertical . transpose
 
 rotate180 :: Grid t -> Grid t
-rotate180 (Grid array width height) = Grid (Data.Vector.reverse array) width height
+rotate180 (Grid array width height) = Grid (V.reverse array) width height
 
 rotate270  = rotate90 . rotate180
