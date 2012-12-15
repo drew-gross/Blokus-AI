@@ -66,18 +66,14 @@ minus (Point x1 y1) (Point x2 y2) = Point (x1 - x2) (y1 - y2)
 rubikDistanceToIntersection :: Point -> Point -> Int
 rubikDistanceToIntersection (Point pointX pointY) (Point intersectionX intersectionY) = hDist + vDist
 	where
-		hDist = if pointX < intersectionX then
-					intersectionX - pointX - 1
-				else if pointX > intersectionX then
-					pointX - intersectionX
-				else 
-					0
-		vDist = if pointY < intersectionY then
-					intersectionY - pointY - 1
-				else if pointY > intersectionY then
-					pointY - intersectionY
-				else
-					0
+		hDist 
+			| pointX < intersectionX = intersectionX - pointX - 1
+			| pointX > intersectionX = pointX - intersectionX
+			| otherwise = 0
+		vDist
+			| pointY < intersectionY = intersectionY - pointY - 1
+			| pointY > intersectionY = pointY - intersectionY
+			| otherwise = 0
 
 range :: Point -> Point -> [Point]
 range (Point startX startY) (Point endX endY) = [Point x y | y <- [startY..endY], x <- [startX..endX]]
@@ -85,7 +81,7 @@ range (Point startX startY) (Point endX endY) = [Point x y | y <- [startY..endY]
 transposeRange :: Point -> Point -> [Point]
 transposeRange (Point startX startY) (Point endX endY) = [Point x y | x <- [startX..endX], y <- [startY..endY]]
 
-read1IndexedPoint = (flip minus $ Point 1 1)
+read1IndexedPoint = flip minus $ Point 1 1
 
 getPoint :: MaybeT IO Point
 getPoint = Point <$> (MaybeT $ maybeRead <$> prompt "Enter x: ") <*> (MaybeT $ maybeRead <$> prompt "Enter y: ")

@@ -53,12 +53,12 @@ enemyLaunchPointsLost board enemy move@(Move piece _) = fromIntegral $ enemyLaun
 		enemyLaunchPointsNow = numOfLaunchPointsForColor board enemyColor
 
 rubikDistanceToCenter :: Fractional a => Board -> Player -> Move -> a
-rubikDistanceToCenter board _ move@(Move piece position) = fromIntegral $ foldr (min) 100 rubikDistances --TODO: 100 chosen arbitrarily, its larger than any board out there
+rubikDistanceToCenter board _ move@(Move piece position) = fromIntegral $ foldr min 100 rubikDistances --TODO: 100 chosen arbitrarily, its larger than any board out there
 	where
 		centerInter = centerIntersection $ Board.grid board
 		points = filledPointsOnBoard move
 		rubikDistances :: [Int]
-		rubikDistances = (flip rubikDistanceToIntersection) centerInter <$> points
+		rubikDistances = flip rubikDistanceToIntersection centerInter <$> points
 
 data Chromosome = Chromosome {genes :: [Gene], name :: String}
 
@@ -66,14 +66,16 @@ instance Show Chromosome where
 	show = name
 
 instance Eq Chromosome where
-	(==) left right = name left == name right
-	(/=) left right = not $ left == right
+	(==) left right = left `isEqual` right
+	(/=) left right = not $ left `isEqual` right
+
+left `isEqual` right = name left == name right
 
 newComputer :: Color -> Chromosome -> Player
 newComputer color chromosome@(Chromosome _ name) = Player (startingPieces color) color (completeAiTurn chromosome) name 
 
 newHuman :: Color -> String -> Player
-newHuman color name = Player (startingPieces color) color completeUserTurn name
+newHuman color = Player (startingPieces color) color completeUserTurn
 
 completeAiTurn :: Chromosome -> Player -> Board -> Player -> IO (Maybe (Board, Player))
 completeAiTurn chromosome player board enemy = return $! (,) <$> updatedBoard <*> updatedPlayer
@@ -88,8 +90,8 @@ aiSelectedMove chromosome player board enemy = maybeHead $ reverse $ sortBy (com
 completeUserTurn :: Player -> Board -> Player -> IO (Maybe (Board, Player))
 completeUserTurn player board enemy = do
 	val <- retry $ getMove player board enemy
-	if isNothing val then do
-		return $! Nothing
+	if isNothing val then
+		return Nothing
 	else do
 		let Just (move, updatedBoard, updatedPlayer) = val
 		if isValid board move then do
@@ -111,5 +113,5 @@ fitnessForMove :: Chromosome -> Board -> Player -> Move -> Double
 fitnessForMove (Chromosome genes _) board enemy move = sum $ valueForMove board enemy move <$> genes
 
 functions = [squaresUsed, launchPointsGained, enemyLaunchPointsLost, rubikDistanceToCenter]
-weights = combinationsOfLength 4 [1.0, (-1.0)]
+weights = combinationsOfLength 4 [1.0, -1.0]
 chromosomes = reverse $ makeChromosomes weights functions

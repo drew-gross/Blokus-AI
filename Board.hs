@@ -37,10 +37,10 @@ empty2PlayerBoard = Board (makeEmptyGrid defaultSize defaultSize empty) defaultS
 candidateMovesForPieceRotation :: Board -> Piece -> [Move]
 candidateMovesForPieceRotation board@(Board boardGrid _) piece@(Piece pieceGrid identifier) = Move piece <$> range origin maxPlacementPoint
 	where
-		maxPlacementPoint = ((maxPoint boardGrid) `minus` (maxPoint pieceGrid))
+		maxPlacementPoint = maxPoint boardGrid `minus` maxPoint pieceGrid
 
 validMovesForPieceRotation :: Board -> Piece -> [Move]
-validMovesForPieceRotation board = (filter $ isValid board) . (candidateMovesForPieceRotation board)
+validMovesForPieceRotation board = filter (isValid board) . candidateMovesForPieceRotation board
 
 validMovesForPiece :: Board -> Piece -> [Move]
 validMovesForPiece board piece = concat $ validMovesForPieceRotation board <$> rotations piece
@@ -48,7 +48,7 @@ validMovesForPiece board piece = concat $ validMovesForPieceRotation board <$> r
 isInBounds :: Board -> Move -> Bool
 isInBounds (Board bgrid _) (Move (Piece grid _) position)
 	| not $ containsPoint bgrid position = False
-	| not $ containsPoint bgrid $ position `plus` (maxPoint grid) = False
+	| not $ containsPoint bgrid $ position `plus` maxPoint grid = False
 	| otherwise = True
 
 isValid :: Board -> Move -> Bool
@@ -114,7 +114,7 @@ launchPointsForColor :: Board -> Color -> [Point]
 launchPointsForColor board@(Board grid _) color = filter (isPointLaunchPointForColor board color) $ allPoints grid
 
 numOfLaunchPointsForColor :: Board -> Color -> Int
-numOfLaunchPointsForColor board = length . (launchPointsForColor board)
+numOfLaunchPointsForColor board = length . launchPointsForColor board
 
 prevPoint :: Piece -> Point -> Point
 prevPoint (Piece grid _) (Point 0 y) = Point (width grid - 1) (y - 1)

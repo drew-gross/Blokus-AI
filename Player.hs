@@ -41,7 +41,7 @@ instance Show Player where
 
 instance Eq Player where
 	(==) left right = name left == name right
-	(/=) left right = not $ left == right
+	(/=) left right = name left /= name right
 
 removePiece :: Player -> Piece -> Player
 removePiece (Player pieces color doTurn name) piece = Player (pieces \\ [piece]) color doTurn name
@@ -75,25 +75,25 @@ startingGrids color =
 			 makeFilledGridWithList [empty, color, color, color, color, empty, empty, color, empty] 3 --F
 			 ]
 	
-startingPieces color = zipWith (Piece) (startingGrids color) $ [1..]
+startingPieces color = zipWith Piece (startingGrids color) [1..]
 
 getPiece :: Player -> Board -> MaybeT IO Piece
 getPiece player@(Player pieces _ _ _) board = piece
 	where
-		promptString = displayToUserForPlayer player board ++ "\n" ++ (display player) ++ "\n" ++ "Enter piece number: "
+		promptString = displayToUserForPlayer player board ++ "\n" ++ display player ++ "\n" ++ "Enter piece number: "
 		input = lift $ prompt promptString
-		index = MaybeT <$> return <$> ((fmap cvtFrom1indexedInt) . maybeRead) =<< input
+		index = MaybeT <$> return <$> (fmap cvtFrom1indexedInt . maybeRead) =<< input
 		piece = MaybeT <$> return <$> maybeIndex pieces =<< index
 
 getRotatedPiece :: Player -> Board -> IO (Maybe Piece)
 getRotatedPiece player@(Player pieces _ _ _) board = do
 	unrotatedPiece <- runMaybeT $ getPiece player board
-	let rotatedPieceList = rotations <$> (MaybeT $ (return unrotatedPiece))
+	let rotatedPieceList = rotations <$> (MaybeT $ return unrotatedPiece)
 	let displayListString = displayNumberedList <$> rotatedPieceList
 	let restOfString = MaybeT <$> return <$> Just $ "\nEnter rotation number:"
 	let promptString = (++) <$> displayListString <*> restOfString
-	let input = MaybeT <$> (fmap Just) <$> prompt =<< promptString
-	let index = MaybeT <$> return <$> ((fmap cvtFrom1indexedInt) . maybeRead) =<< input
+	let input = MaybeT <$> fmap Just <$> prompt =<< promptString
+	let index = MaybeT <$> return <$> (fmap cvtFrom1indexedInt . maybeRead) =<< input
 	let piece = MaybeT <$> return <$> uncurry maybeIndex =<< (,) <$> rotatedPieceList <*> index
 	runMaybeT piece
 
@@ -127,7 +127,7 @@ displayToUserForPlayer player board = header ++ annotatedBoardString
 	where
 		header = " 12345678901234\n"
 		boardString = displayForPlayer player board
-		annotatedBoardString = unlines $ zipWith (++) (show <$> repeatedSingleDigits) (lines $ boardString)
+		annotatedBoardString = unlines $ zipWith (++) (show <$> repeatedSingleDigits) (lines boardString)
 
 doTurn :: Player -> Board -> Player -> IO (Maybe (Board, Player))
 doTurn player@(Player _ _ completeMove _) = completeMove player
@@ -136,4 +136,4 @@ squaresRemaining :: Player -> Int
 squaresRemaining (Player pieces _ _ _)= sum $ length <$> filledPoints <$> pieces
 
 winner :: [Player] -> Player
-winner = head . sortBy (compare `on` squaresRemaining)
+winner = minimumBy (compare `on` squaresRemaining)

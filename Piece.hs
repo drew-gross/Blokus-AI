@@ -20,8 +20,10 @@ instance Display Piece where
 	display =  display . grid
 
 instance Eq Piece where
-	(==) left right = Piece.color left == Piece.color right && identifier left == identifier right
-	(/=) left right = not $ left == right
+	(==) left right = left `isEqual` right
+	(/=) left right = not $ left `isEqual` right
+
+left `isEqual` right = Piece.color left == Piece.color right && identifier left == identifier right
 
 color :: Piece -> Color
 color = Grid.color . Piece.grid
@@ -29,15 +31,17 @@ color = Grid.color . Piece.grid
 pieceWithID = flip Piece
 
 rotations :: Piece -> [Piece]
-rotations (Piece grid identifier) = pieceWithID identifier <$> (nub $ ($ grid) <$> [
-														  id, 
-											 			  rotate90,
-											 			  rotate180, 
-											 			  rotate270, 
-											 			  flipAboutVertical, 
-											 			  flipAboutVertical . rotate90, 
-											 			  flipAboutVertical . rotate180, 
-											 			  flipAboutVertical . rotate270])	
+rotations (Piece grid identifier) = pieceWithID identifier <$> nub (($ grid) <$> rotationFunctions)
+	where
+		rotationFunctions = [
+			id, 
+			rotate90,
+			rotate180, 
+			rotate270, 
+			flipAboutVertical, 
+			flipAboutVertical . rotate90, 
+			flipAboutVertical . rotate180, 
+			flipAboutVertical . rotate270]
 
 filledPoints :: Piece -> [Point]
 filledPoints (Piece grid _) = filter (\point -> unsafeItemAt grid point /= empty) $ allPoints grid

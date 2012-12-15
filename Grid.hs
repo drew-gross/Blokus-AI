@@ -61,10 +61,10 @@ rows :: Grid t -> [[t]]
 rows (Grid array width _) = chunksOf width $ toList array
 
 maxPoint :: Grid t -> Point
-maxPoint grid = Point ((width grid) - 1) ((height grid) - 1)
+maxPoint grid = Point (width grid - 1) (height grid - 1)
 
 allPoints :: Grid t -> [Point]
-allPoints = (range origin) . maxPoint
+allPoints = range origin . maxPoint
 
 containsPoint :: Grid t -> Point -> Bool
 containsPoint grid (Point x y)
@@ -75,7 +75,7 @@ containsPoint grid (Point x y)
 	| otherwise = True
 
 itemIndex :: Grid t -> Point -> Int
-itemIndex grid (Point x y) = (y * (width grid)) + x
+itemIndex grid (Point x y) = (y * width grid) + x
 
 itemPoint :: Grid t -> Int -> Point
 itemPoint (Grid array width _) index = Point {x = V.length array `mod` width, y = V.length array `div` width}

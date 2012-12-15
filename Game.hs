@@ -26,8 +26,8 @@ playGame (board, players@(player:enemy:otherPlayers)) isGameOver
 	| length players /= 2 = error "Only 2 player games are supported for now"
 	| otherwise = do
 		m <- doTurn player board enemy
-		if isNothing m && isGameOver then do
-			return $! [winingPlayer, losingPlayer]
+		if isNothing m && isGameOver then
+			return [winingPlayer, losingPlayer]
 		else if isNothing m then 
 			playGame (board, enemy:otherPlayers ++ [player]) True --current player can't move, put them on the back of the stack and let next player go
 		else do
@@ -40,8 +40,7 @@ playGame (board, players@(player:enemy:otherPlayers)) isGameOver
 
 playTournament :: (Board, [[Player]]) -> IO [[Player]]
 playTournament (board, []) = return []
-playTournament (board, pair:pairs) = do
-	(:) <$> result <*> otherResults
+playTournament (board, pair:pairs) = (:) <$> result <*> otherResults
 	where
 		result = playGame (board, pair) False
 		otherResults = playTournament (board, pairs)

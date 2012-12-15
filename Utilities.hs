@@ -50,13 +50,10 @@ combinationsOfLength :: Int -> [a] -> [[a]]
 combinationsOfLength 0 _ = []
 combinationsOfLength _ [] = []
 combinationsOfLength 1 xs = (: []) <$> xs
-combinationsOfLength n xs = concat $ (prependToCombinations (n - 1) xs) <$> xs
+combinationsOfLength n xs = concat $ prependToCombinations (n - 1) xs <$> xs
 
 prependToCombinations :: Int -> [a] -> a -> [[a]]
-prependToCombinations n xs x = prependToLists x $ combinationsOfLength n xs
-
-prependToLists :: a -> [[a]] -> [[a]]
-prependToLists x lists = map (x :) lists
+prependToCombinations n xs x = (x :) <$> combinationsOfLength n xs
 
 retry :: MaybeT IO a -> IO a
 retry x = do
