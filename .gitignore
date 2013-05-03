@@ -3,6 +3,7 @@
 *.o
 *.hcr
 *.prof
+.DS_Store
 playVsHuman
 playTournament
 playGame
